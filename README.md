@@ -15,12 +15,14 @@ Installation
 
 Example configuration
 ---------------------
-```output {
+```
+output {
 	jdbc {
 		driver_class => 'com.microsoft.sqlserver.jdbc.SQLServerDriver'
 		connection_string => "jdbc:sqlserver://server:1433;databaseName=databasename;user=username;password=password;autoReconnect=true;"
-		statement => [ "INSERT INTO filezilla (host, connection_id, timestamp, username, client, command) VALUES(?, ?, ?, ?, ?, ?)", "%{host}", "%{connection_id}", "%{timestamp}", "%{username}", "%{client}", "%{command}" ]
+		statement => [ "INSERT INTO filezilla (host, connection_id, timestamp, username, client, command) VALUES(?, ?, ?, ?, ?, ?)", "%{host}", "%{connection_id}", "%{timestamp}", "%{username}", "%{client}", "%{command}" ] 
 	}
-}```
+}
+```
 
 /* vim: set ts=4 sw=4 tw=0 :*/
