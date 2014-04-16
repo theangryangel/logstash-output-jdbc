@@ -9,7 +9,7 @@ This has not yet been extensively tested with all JDBC drivers and may not yet w
 
 Installation
 ------------
-  - Copy logstash directory contents into your logstash installation.
+  - Copy lib directory contents into your logstash installation.
   - Add JDBC jar files to vendor/jar/jdbc in your logstash installation
   - Configure
 
