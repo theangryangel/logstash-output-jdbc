@@ -45,7 +45,11 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
 
     @logger.debug("Sending SQL to server", :event => event, :sql => statement.toString())
 
-    statement.executeUpdate()
+    begin
+      statement.executeUpdate()
+    rescue Exception => e
+      @logger.error("JDBC Exception", :exception => e)
+    end
     statement.close()
   end
 
