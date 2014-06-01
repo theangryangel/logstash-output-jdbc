@@ -19,11 +19,9 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   # [ "insert into table (message) values(?)", "%{message}" ] 
   config :statement, :validate => :array, :required => true
 
-  # This plugin uses the bulk index api for improved performance.
-  # To make efficient bulk insert calls, we will buffer a certain number of
-  # events before flushing that out to SQL. This setting
-  # controls how many events will be buffered before sending a batch
-  # of events.
+  # We buffer a certain number of events before flushing that out to SQL.
+  # This setting controls how many events will be buffered before sending a
+  # batch of events.
   config :flush_size, :validate => :number, :default => 1000
 
   # The amount of time since last flush before a flush is forced.
@@ -83,17 +81,13 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
     end
 
     begin
-      @logger.debug("Sending SQL to server", :event => event, :sql => statement.toString())      
+      @logger.debug("Sending SQL to server", :sql => statement.toString())      
       statement.executeBatch()
-    rescue Exception => e
-      @logger.error("JDBC Exception", :exception => e)
-
+    rescue => e
       # Raising an exception will incur a retry from Stud::Buffer.
       # Since the exceutebatch failed this should mean any events failed to be
-      # inserted will be re-run.
-      # We're only capturing the exception so we can pass it to the logger, log
-      # it and then re-raise it.
-      raise Exception.new("JDBC - Flush failed - #{e.message}")
+      # inserted will be re-run. We're going to log it for the lols anyway.
+      @logger.error("JDBC Exception", :exception => e)
     end
 
     statement.close()
