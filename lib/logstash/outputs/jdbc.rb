@@ -2,6 +2,7 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
 require "stud/buffer"
+require "java"
 
 class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   # Adds buffer support
@@ -16,7 +17,7 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   # connection string
   config :connection_string, :validate => :string, :required => true
 
-  # [ "insert into table (message) values(?)", "%{message}" ] 
+  # [ "insert into table (message) values(?)", "%{message}" ]
   config :statement, :validate => :array, :required => true
 
   # We buffer a certain number of events before flushing that out to SQL.
@@ -33,17 +34,28 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   #
   # This helps keep both fast and slow log streams moving along in
   # a timely manner.
+  #
+  # If you change this value please ensure that you change
+  # max_repeat_exceptions_time accordingly.
   config :idle_flush_time, :validate => :number, :default => 1
-  
+
+  # Maximum number of repeating (sequential) exceptions, before we stop retrying
+  # If set to < 1, then it will infinitely retry.
+  config :max_repeat_exceptions, :validate => :number, :default => 5
+
+  # The max number of seconds since the last exception, before we consider it
+  # a different cause.
+  # This value should be carefully considered in respect to idle_flush_time.
+  config :max_repeat_exceptions_time, :validate => :number, :default => 30
+
   public
   def register
-    @logger.info("Starting up JDBC")
-    require "java"
+    @logger.info("JDBC - Starting up")
 
     jarpath = File.join(File.dirname(__FILE__), "../../../vendor/jar/jdbc/*.jar")
     @logger.info(jarpath)
     Dir[jarpath].each do |jar|
-      @logger.debug("JDBC loaded jar", :jar => jar)
+      @logger.debug("JDBC - Loaded jar", :jar => jar)
       require jar
     end
 
@@ -52,10 +64,17 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
     driver = Object.const_get(@driver_class[@driver_class.rindex('.') + 1, @driver_class.length]).new
     @connection = driver.connect(@connection_string, java.util.Properties.new)
 
-    @logger.debug("JDBC", :driver => driver, :connection => @connection)
+    @logger.debug("JDBC - Created connection", :driver => driver, :connection => @connection)
 
     if (@flush_size > 1000)
-      @logger.warn("JDBC - flush size is set to > 1000. May have performance penalties, depending on your SQL engine.")
+      @logger.warn("JDBC - Flush size is set to > 1000. May have performance penalties, depending on your SQL engine.")
+    end
+
+    @repeat_exception_count = 0
+    @last_exception_time = Time.now
+
+    if (@max_repeat_exceptions > 0) and ((@idle_flush_time * @max_repeat_exceptions) > @max_repeat_exceptions_time)
+      @logger.warn("JDBC - max_repeat_exceptions_time is set such that it may still permit a looping exception. You probably changed idle_flush_time. Considering increasing max_repeat_exceptions_time.")
     end
 
     buffer_initialize(
@@ -74,23 +93,58 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
 
   def flush(events, teardown=false)
     statement = @connection.prepareStatement(@statement[0])
-    
+
     events.each do |event|
-      @statement[1..-1].each_with_index { |i, idx| statement.setString(idx + 1, event.sprintf(i)) } if @statement.length > 1
+      next if @statement.length < 2
+
+      @statement[1..-1].each_with_index do |i, idx|
+        case event[i]
+        when Time
+          # Most reliable solution, cross JDBC driver
+          statement.setString(idx + 1, event[i].iso8601())
+        when Fixnum, Integer
+          statement.setInt(idx, + 1, event[i])
+        when Float
+          statement.setFloat(idx, + 1, event[i])
+        when String
+          statement.setString(idx + 1, event[i])
+        else
+          statement.setString(idx + 1, event.sprintf(i))
+        end
+      end
+
       statement.addBatch()
     end
 
     begin
-      @logger.debug("Sending SQL to server", :sql => statement.toString())      
+      @logger.debug("JDBC - Sending SQL", :sql => statement.toString())
       statement.executeBatch()
     rescue => e
       # Raising an exception will incur a retry from Stud::Buffer.
       # Since the exceutebatch failed this should mean any events failed to be
       # inserted will be re-run. We're going to log it for the lols anyway.
-      @logger.error("JDBC Exception", :exception => e)
+      @logger.warn("JDBC - Exception. Will automatically retry", :exception => e)
     end
 
     statement.close()
+  end
+
+  def on_flush_error(e)
+    return if @max_repeat_exceptions < 1
+
+    if @last_exception == e.to_s
+      @repeat_exception_count += 1
+    else
+      @repeat_exception_count = 0
+    end
+
+    if (@repeat_exception_count >= @max_repeat_exceptions) and (Time.now - @last_exception_time) < @max_repeat_exceptions_time
+      @logger.error("JDBC - Exception repeated more than the maximum configured", :exception => e, :max_repeat_exceptions => @max_repeat_exceptions, :max_repeat_exceptions_time => @max_repeat_exceptions_time)
+      raise e
+    end
+
+    @last_exception_time = Time.now
+    @last_exception = e.to_s
   end
 
   def teardown
