@@ -103,9 +103,9 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
           # Most reliable solution, cross JDBC driver
           statement.setString(idx + 1, event[i].iso8601())
         when Fixnum, Integer
-          statement.setInt(idx, + 1, event[i])
+          statement.setInt(idx + 1, event[i])
         when Float
-          statement.setFloat(idx, + 1, event[i])
+          statement.setFloat(idx + 1, event[i])
         when String
           statement.setString(idx + 1, event[i])
         else
