@@ -2,6 +2,8 @@
 JDBC output plugin for Logstash.
 This plugin is provided as an external plugin and is not part of the Logstash project.
 
+Currently untested with logstash 1.5+. Support is planned.
+
 ## Warning
 This has not yet been extensively tested with all JDBC drivers and may not yet work for you.
 
