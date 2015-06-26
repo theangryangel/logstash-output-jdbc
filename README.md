@@ -1,16 +1,20 @@
-# logstash-jdbc
-JDBC output plugin for Logstash.
+# logstash-output-jdbc
 This plugin is provided as an external plugin and is not part of the Logstash project.
 
-## Warning
-The master branch is for 1.5, is currently incomplete and should NOT be used (yet).
-
-Please see the v1.4 branch for v1.4 of Logstash.
+This plugin allows you to output to SQL databases, using JDBC adapters.
+See below for tested adapters, and example configurations.
 
 This has not yet been extensively tested with all JDBC drivers and may not yet work for you.
 
+This plugin does not bundle any JDBC jar files, and does expect them to be in a
+particular location. Please ensure you read the 4 installation lines below.
+
+## Versions
+  - See master branch for logstash v1.5 
+  - See v1.4 branch for logstash 1.4
+
 ## Installation
-  - Copy lib directory contents into your logstash installation.
+  - Run `bin/plugin install logstash-output-jdbc` in your logstash installation directory
   - Create the directory vendor/jar/jdbc in your logstash installation (`mkdir -p vendor/jar/jdbc/`)
   - Add JDBC jar files to vendor/jar/jdbc in your logstash installation
   - Configure
@@ -93,5 +97,3 @@ output {
 	}
 }
 ```
-
-/* vim: set ts=4 sw=4 tw=0 :*/
