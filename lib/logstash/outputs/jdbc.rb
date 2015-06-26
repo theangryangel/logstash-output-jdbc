@@ -9,7 +9,6 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   include Stud::Buffer
 
   config_name "jdbc"
-  milestone 1
 
   # Driver class
   config :driver_class, :validate => :string
@@ -50,11 +49,21 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
 
   public
   def register
+
     @logger.info("JDBC - Starting up")
 
-    jarpath = File.join(File.dirname(__FILE__), "../../../vendor/jar/jdbc/*.jar")
-    @logger.info(jarpath)
-    Dir[jarpath].each do |jar|
+    if ENV['LOGSTASH_HOME']
+      jarpath = File.join(ENV['LOGSTASH_HOME'], "/vendor/jar/jdbc/*.jar")
+    else
+      jarpath = File.join(File.dirname(__FILE__), "../../../vendor/jar/jdbc/*.jar")
+    end
+
+    @logger.debug("JDBC - jarpath", path: jarpath)
+
+    jars = Dir[jarpath]
+    raise Exception.new("JDBC - No jars found in jarpath. Have you read the README?") if jars.empty?
+
+    jars.each do |jar|
       @logger.debug("JDBC - Loaded jar", :jar => jar)
       require jar
     end
@@ -99,7 +108,7 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
 
       @statement[1..-1].each_with_index do |i, idx|
         case event[i]
-        when Time
+        when Time, LogStash::Timestamp
           # Most reliable solution, cross JDBC driver
           statement.setString(idx + 1, event[i].iso8601())
         when Fixnum, Integer
