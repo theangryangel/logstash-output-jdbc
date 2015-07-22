@@ -117,13 +117,13 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
           statement.setFloat(idx + 1, event[i])
         when String
           statement.setString(idx + 1, event[i])
-		when true
-		  statement.setBoolean(idx + 1, true)
-		when false
-		  statement.setBoolean(idx + 1, false)
-		when nil
-		  statement.setString(idx + 1, nil)
-		else
+        when true
+          statement.setBoolean(idx + 1, true)
+        when false
+          statement.setBoolean(idx + 1, false)
+        when nil
+          statement.setString(idx + 1, nil)
+        else
           statement.setString(idx + 1, event.sprintf(i))
         end
       end
@@ -139,9 +139,9 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
       # Since the exceutebatch failed this should mean any events failed to be
       # inserted will be re-run. We're going to log it for the lols anyway.
       @logger.warn("JDBC - Exception. Will automatically retry", :exception => e)
-	  if e.getNextException() != nil
-	    @logger.warn("JDBC - Exception. Will automatically retry", :exception => e.getNextException())
-	  end
+      if e.getNextException() != nil
+	      @logger.warn("JDBC - Exception. Will automatically retry", :exception => e.getNextException())
+  	  end
     end
 
     statement.close()
