@@ -97,3 +97,20 @@ output {
 	}
 }
 ```
+
+### Mysql
+  * Tested with Version 14.14 Distrib 5.5.43, for debian-linux-gnu (x86_64)
+  * Tested using http://dev.mysql.com/downloads/file.php?id=457911 (mysql-connector-java-5.1.36-bin.jar)
+```
+input
+{
+	stdin { }
+}
+output {
+	jdbc {
+		driver_class => "com.mysql.jdbc.Driver"
+		connection_string => "jdbc:mysql://HOSTNAME/DATABASE?user=USER&password=PASSWORD"
+		statement => [ "INSERT INTO log (host, timestamp, message) VALUES(?, CAST (? AS timestamp), ?)", "host", "@timestamp", "message" ]
+	}
+}
+```
