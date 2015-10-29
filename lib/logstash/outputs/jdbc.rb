@@ -71,7 +71,7 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
     import @driver_class
 
     driver = Object.const_get(@driver_class[@driver_class.rindex('.') + 1, @driver_class.length]).new
-    @connection = driver.connect(@connection_string, java.util.Properties.new)
+    @connection = driver.connect(event.sprintf(@connection_string), java.util.Properties.new)
 
     @logger.debug("JDBC - Created connection", :driver => driver, :connection => @connection)
 
