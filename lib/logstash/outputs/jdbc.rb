@@ -3,6 +3,7 @@ require "logstash/outputs/base"
 require "logstash/namespace"
 require "stud/buffer"
 require "java"
+require "yaml"
 
 class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   # Adds buffer support
@@ -14,7 +15,10 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   config :driver_class, :validate => :string
 
   # connection string
-  config :connection_string, :validate => :string, :required => true
+  config :connection_string, :validate => :string
+
+  # config file path
+  config :config_path, :validate => :string
 
   # [ "insert into table (message) values(?)", "%{message}" ]
   config :statement, :validate => :array, :required => true
@@ -71,6 +75,9 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
     import @driver_class
 
     driver = Object.const_get(@driver_class[@driver_class.rindex('.') + 1, @driver_class.length]).new
+
+    @connection_string ||= YAML.load_file(@config_path)['db']['con_string']
+
     @connection = driver.connect(@connection_string, java.util.Properties.new)
 
     @logger.debug("JDBC - Created connection", :driver => driver, :connection => @connection)
