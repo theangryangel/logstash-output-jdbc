@@ -10,7 +10,7 @@ This plugin does not bundle any JDBC jar files, and does expect them to be in a
 particular location. Please ensure you read the 4 installation lines below.
 
 ## Versions
-  - See master branch for logstash v1.5 
+  - See v1.5 branch for logstash v1.5 
   - See v1.4 branch for logstash 1.4
 
 ## Installation
