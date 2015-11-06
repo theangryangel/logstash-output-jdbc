@@ -121,10 +121,12 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
           statement.setBoolean(idx + 1, true)
         when false
           statement.setBoolean(idx + 1, false)
-        when nil
-          statement.setString(idx + 1, nil)
         else
-          statement.setString(idx + 1, event.sprintf(i))
+          if event[i].nil? and i =~ /%{/
+            statement.setString(idx + 1, event.sprintf(i))
+          else
+            statement.setString(idx + 1, nil)
+          end
         end
       end
 
