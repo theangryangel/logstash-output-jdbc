@@ -12,7 +12,7 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   config_name "jdbc"
 
   # Driver class - No longer required
-  config :driver_class, :obsolete => true
+  config :driver_class, :obsolete => "driver_class is no longer required and can be removed from your configuration"
 
   # Where to find the jar
   # Defaults to not required, and to the original behaviour
@@ -104,7 +104,7 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   end
 
   def receive(event)
-    return unless output?(event)
+    return unless output?(event) or event.cancelled?
     return unless @statement.length > 0
 
     buffer_receive(event)
@@ -173,10 +173,10 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
 
   def safe_flush(events, teardown=false)
     connection = @pool.getConnection()
-
     statement = connection.prepareStatement(@statement[0])
 
     events.each do |event|
+      next if event.cancelled?
       next if @statement.length < 2
       statement = add_statement_event_params(statement, event)
 
@@ -184,17 +184,13 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
     end
 
     begin
-      @logger.debug("JDBC - Sending SQL", :sql => statement.toString())
       statement.executeBatch()
       statement.close()
     rescue => e
       # Raising an exception will incur a retry from Stud::Buffer.
       # Since the exceutebatch failed this should mean any events failed to be
       # inserted will be re-run. We're going to log it for the lols anyway.
-      @logger.warn("JDBC - Exception. Will automatically retry", :exception => e)
-      if e.getNextException() != nil
-        @logger.warn("JDBC - Exception. Will automatically retry", :exception => e.getNextException())
-      end
+      log_jdbc_exception(e)
     ensure
       connection.close();
     end
@@ -204,13 +200,25 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
     connection = @pool.getConnection()
 
     events.each do |event|
+      next if event.cancelled?
+      
       statement = connection.prepareStatement(event.sprintf(@statement[0]))
-
       statement = add_statement_event_params(statement, event) if @statement.length > 1
 
-      statement.execute()
-      statement.close()
-      connection.close()
+      begin
+        statement.execute()
+        
+        # cancel the event, since we may end up outputting the same event multiple times
+        # if an exception happens later down the line
+        event.cancel
+      rescue => e
+        # Raising an exception will incur a retry from Stud::Buffer.
+        # We log for the lols.
+        log_jdbc_exception(e)
+      ensure
+        statement.close()
+        connection.close()
+      end
     end
   end
 
@@ -236,5 +244,14 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
     end
 
     statement
+  end
+
+  def log_jdbc_exception(e)
+    ce = e
+    loop do
+      @logger.error("JDBC Exception encountered: Will automatically retry.", :exception => ce)
+      ce = e.getNextException()
+      break if ce == nil
+    end
   end
 end # class LogStash::Outputs::jdbc
