@@ -12,8 +12,9 @@ This plugin does not bundle any JDBC jar files, and does expect them to be in a
 particular location. Please ensure you read the 4 installation lines below.
 
 ## Headlines
-  - Support for connection pooling added in 0.2.0 [unreleased until #21 is resolved]
-  - Support for unsafe statement handling (allowing dynamic queries) in 0.2.0 [unreleased until #21 is resolved]
+  - Support for connection pooling added in 0.2.0 [unreleased until #10 is resolved]
+  - Support for unsafe statement handling (allowing dynamic queries) in 0.2.0 [unreleased until #10 is resolved]
+  - Altered exception handling to now count sequential flushes with exceptions thrown in 0.2.0 [untested and unreleased until #10 is resolved]
 
 ## Versions
   - See master branch for logstash v2+
@@ -31,20 +32,19 @@ particular location. Please ensure you read the 4 installation lines below.
 
 ## Configuration options
 
-| Option | Type | Description | Required? |
-| ------ | ---- | ----------- | --------- |
-| driver_path | String | File path to jar file containing your JDBC driver. This is optional, and all JDBC jars may be placed in $LOGSTASH_HOME/vendor/jar/jdbc instead. | No |
-| connection_string | String | JDBC connection URL | Yes |
-| username | String | JDBC username - this is optional as it may be included in the connection string, for many drivers | No |
-| password | String | JDBC password - this is optional as it may be included in the connection string, for many drivers | No |
-| statement | Array | An array of strings representing the SQL statement to run. Index 0 is the SQL statement that is prepared, all other array entries are passed in as parameters (in order). A parameter may either be a property of the event (i.e. "@timestamp", or "host") or a formatted string (i.e. "%{host} - %{message}" or "%{message}"). If a key is passed then it will be automatically converted as required for insertion into SQL. If it's a formatted string then it will be passed in verbatim. | Yes | 
-| unsafe_statement | Boolean | If yes, the statement is evaluated for event fields - this allows you to use dynamic table names, etc. **This is highly dangerous** and you should **not** use this unless you are 100% sure that the field(s) you are passing in are 100% safe. Failure to do so will result in possible SQL injections. Please be aware that there is also a potential performance penalty as each event must be evaluated and inserted into SQL one at a time, where as when this is false multiple events are inserted at once. Example statement: [ "insert into %{table_name_field} (column) values(?)", "fieldname" ] | No |
-| max_pool_size | Number | Maximum number of connections to open to the SQL server at any 1 time | No |
-| connection_timeout | Number | Number of seconds before a SQL connection is closed | No |
-| flush_size | Number | Maximum number of entries to buffer before sending to SQL - if this is reached before idle_flush_time | No |
-| idle_flush_time | Number | Number of idle seconds before sending data to SQL - even if the flush_size has not yet been reached | No |
-| max_repeat_exceptions | Number | Number of times the same exception can repeat before we stop logstash. Set to a value less than 1 if you never want it to stop | No |
-| max_repeat_exceptions_time | Number | Maxium number of seconds between exceptions before they're considered "different" exceptions. If you modify idle_flush_time you should consider this value | No |
+| Option | Type | Description | Required? | Default |
+| ------ | ---- | ----------- | --------- | ------- |
+| driver_path | String | File path to jar file containing your JDBC driver. This is optional, and all JDBC jars may be placed in $LOGSTASH_HOME/vendor/jar/jdbc instead. | No | |
+| connection_string | String | JDBC connection URL | Yes | |
+| username | String | JDBC username - this is optional as it may be included in the connection string, for many drivers | No | |
+| password | String | JDBC password - this is optional as it may be included in the connection string, for many drivers | No | |
+| statement | Array | An array of strings representing the SQL statement to run. Index 0 is the SQL statement that is prepared, all other array entries are passed in as parameters (in order). A parameter may either be a property of the event (i.e. "@timestamp", or "host") or a formatted string (i.e. "%{host} - %{message}" or "%{message}"). If a key is passed then it will be automatically converted as required for insertion into SQL. If it's a formatted string then it will be passed in verbatim. | Yes |  |
+| unsafe_statement | Boolean | If yes, the statement is evaluated for event fields - this allows you to use dynamic table names, etc. **This is highly dangerous** and you should **not** use this unless you are 100% sure that the field(s) you are passing in are 100% safe. Failure to do so will result in possible SQL injections. Please be aware that there is also a potential performance penalty as each event must be evaluated and inserted into SQL one at a time, where as when this is false multiple events are inserted at once. Example statement: [ "insert into %{table_name_field} (column) values(?)", "fieldname" ] | No | False |
+| max_pool_size | Number | Maximum number of connections to open to the SQL server at any 1 time | No | 5 |
+| connection_timeout | Number | Number of seconds before a SQL connection is closed | No | 2800 |
+| flush_size | Number | Maximum number of entries to buffer before sending to SQL - if this is reached before idle_flush_time | No | 1000 |
+| idle_flush_time | Number | Number of idle seconds before sending data to SQL - even if the flush_size has not yet been reached | No | 1 |
+| max_flush_exceptions | Number | Number of sequential flushes which cause an exception, before we stop logstash. Set to a value less than 1 if you never want it to stop. This should be carefully configured with relation to idle_flush_time if your SQL instance is not highly available. | No | 0 |
 
 ## Example configurations
 If you have a working sample configuration, for a DB thats not listed, pull requests are welcome.

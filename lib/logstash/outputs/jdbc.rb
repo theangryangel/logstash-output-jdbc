@@ -4,6 +4,7 @@ require "logstash/namespace"
 require "stud/buffer"
 require "java"
 require "logstash-output-jdbc_jars"
+require "logstash-output-jdbc_ring-buffer"
 
 class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   # Adds buffer support
@@ -58,17 +59,20 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   # a timely manner.
   #
   # If you change this value please ensure that you change
-  # max_repeat_exceptions_time accordingly.
+  # max_flush_exceptions accordingly.
   config :idle_flush_time, :validate => :number, :default => 1
 
-  # Maximum number of repeating (sequential) exceptions, before we stop retrying
+  # Maximum number of sequential flushes which encounter exceptions, before we stop retrying.
   # If set to < 1, then it will infinitely retry.
-  config :max_repeat_exceptions, :validate => :number, :default => 4
+  # 
+  # You should carefully tune this in relation to idle_flush_time if your SQL server
+  # is not highly available.
+  # i.e. If your idle_flush_time is 1, and your max_flush_exceptions is 200, and your SQL server takes
+  # longer than 200 seconds to reboot, then logstash will stop.
+  config :max_flush_exceptions, :validate => :number, :default => 0
 
-  # The max number of seconds since the last exception, before we consider it
-  # a different cause.
-  # This value should be carefully considered in respect to idle_flush_time.
-  config :max_repeat_exceptions_time, :validate => :number, :default => 30
+  config :max_repeat_exceptions, :obsolete => "This has been replaced by max_flush_exceptions - which behaves slightly differently. Please check the documentation."
+  config :max_repeat_exceptions_time, :obsolete => "This is no longer required"
 
   public
   def register
@@ -85,15 +89,10 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
     @pool.setMaximumPoolSize(@max_pool_size)
     @pool.setConnectionTimeout(@connection_timeout)
 
+    @exceptions_tracker = RingBuffer.new(@max_flush_exceptions)
+
     if (@flush_size > 1000)
       @logger.warn("JDBC - Flush size is set to > 1000")
-    end
-
-    @repeat_exception_count = 0
-    @last_exception_time = Time.now
-
-    if (@max_repeat_exceptions > 0) and ((@idle_flush_time * @max_repeat_exceptions) > @max_repeat_exceptions_time)
-      @logger.warn("JDBC - max_repeat_exceptions_time is set such that it may still permit a looping exception. You probably changed idle_flush_time. Considering increasing max_repeat_exceptions_time.")
     end
 
     buffer_initialize(
@@ -119,21 +118,14 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   end
 
   def on_flush_error(e)
-    return if @max_repeat_exceptions < 1
+    return if @max_flush_exceptions < 1
 
-    if @last_exception == e.to_s
-      @repeat_exception_count += 1
-    else
-      @repeat_exception_count = 0
-    end
+    @exceptions_tracker << e.class
 
-    if (@repeat_exception_count >= @max_repeat_exceptions) and (Time.now - @last_exception_time) < @max_repeat_exceptions_time
-      @logger.error("JDBC - Exception repeated more than the maximum configured", :exception => e, :max_repeat_exceptions => @max_repeat_exceptions, :max_repeat_exceptions_time => @max_repeat_exceptions_time)
+    if @exceptions_tracker.reject { |i| i.nil? }.count >= @max_flush_exceptions
+      @logger.error("JDBC - max_flush_exceptions has been reached")
       raise e
     end
-
-    @last_exception_time = Time.now
-    @last_exception = e.to_s
   end
 
   def teardown
@@ -239,7 +231,11 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
       when false
         statement.setBoolean(idx + 1, false)
       else
-        statement.setString(idx + 1, event.sprintf(i))
+        if event[i].nil? and i =~ /%\{/
+          statement.setString(idx + 1, event.sprintf(i))
+        else
+          statement.setString(idx + 1, nil)
+        end
       end
     end
 
