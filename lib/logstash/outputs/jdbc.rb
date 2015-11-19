@@ -178,6 +178,8 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
     begin
       statement.executeBatch()
       statement.close()
+      @exceptions_tracker << nil
+      
     rescue => e
       # Raising an exception will incur a retry from Stud::Buffer.
       # Since the exceutebatch failed this should mean any events failed to be
@@ -203,6 +205,7 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
         # cancel the event, since we may end up outputting the same event multiple times
         # if an exception happens later down the line
         event.cancel
+        @exceptions_tracker << nil
       rescue => e
         # Raising an exception will incur a retry from Stud::Buffer.
         # We log for the lols.
