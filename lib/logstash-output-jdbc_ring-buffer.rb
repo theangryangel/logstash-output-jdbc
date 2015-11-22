@@ -14,6 +14,4 @@ class RingBuffer < Array
       self.push(el)
     end
   end
-
-  alias :push :<<
 end

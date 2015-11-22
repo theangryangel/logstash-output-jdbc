@@ -124,7 +124,8 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
 
     if @exceptions_tracker.reject { |i| i.nil? }.count >= @max_flush_exceptions
       @logger.error("JDBC - max_flush_exceptions has been reached")
-      raise e
+      log_jdbc_exception(e)
+      raise LogStash::ShutdownSignal.new
     end
   end
 
