@@ -12,9 +12,9 @@ This plugin does not bundle any JDBC jar files, and does expect them to be in a
 particular location. Please ensure you read the 4 installation lines below.
 
 ## Headlines
-  - Support for connection pooling added in 0.2.0 [unreleased until #10 is resolved]
-  - Support for unsafe statement handling (allowing dynamic queries) in 0.2.0 [unreleased until #10 is resolved]
-  - Altered exception handling to now count sequential flushes with exceptions thrown in 0.2.0 [untested and unreleased until #10 is resolved]
+  - Support for connection pooling added in 0.2.0
+  - Support for unsafe statement handling (allowing dynamic queries) in 0.2.0 
+  - Altered exception handling to now count sequential flushes with exceptions thrown in 0.2.0 
 
 ## Versions
   - See master branch for logstash v2+
@@ -29,6 +29,13 @@ particular location. Please ensure you read the 4 installation lines below.
     - Create the directory vendor/jar/jdbc in your logstash installation (`mkdir -p vendor/jar/jdbc/`)
     - Add JDBC jar files to vendor/jar/jdbc in your logstash installation
   - And then configure (examples below)
+
+## Running tests
+Assuming valid JDBC jar, and jruby is setup and installed, and you have issued `jruby -S bundle install` in the development directory
+  - `SQL_JAR=path/to/your.jar jruby -S bundle exec rspec`
+If you need to provide username and password you may do this via the environment variables `SQL_USERNAME` and `SQL_PASSWORD`.
+
+Tests are not yet 100% complete.
 
 ## Configuration options
 
