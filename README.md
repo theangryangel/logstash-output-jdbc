@@ -17,6 +17,9 @@ particular location. Please ensure you read the 4 installation lines below.
   - Altered exception handling to now count sequential flushes with exceptions thrown in 0.2.0 
 
 ## Versions
+Released versions are are tagged as of v0.2.1, and available via rubygems.
+
+For development:
   - See master branch for logstash v2+
   - See v1.5 branch for logstash v1.5 
   - See v1.4 branch for logstash 1.4
@@ -24,7 +27,7 @@ particular location. Please ensure you read the 4 installation lines below.
 ## Installation
   - Run `bin/plugin install logstash-output-jdbc` in your logstash installation directory
   - Now either:
-    - Use driver_class in your configuraton to specify a path to your jar file
+    - Use driver_path in your configuraton to specify a path to your jar file
   - Or:
     - Create the directory vendor/jar/jdbc in your logstash installation (`mkdir -p vendor/jar/jdbc/`)
     - Add JDBC jar files to vendor/jar/jdbc in your logstash installation

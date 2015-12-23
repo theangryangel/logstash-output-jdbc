@@ -102,6 +102,14 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
       @logger.warn("JDBC - Flush size is set to > 1000")
     end
 
+    if @statement.length < 1
+      @logger.error("JDBC - No statement provided. Configuration error.")
+    end
+
+    if (!@unsafe_statement and @statement.length < 2) 
+      @logger.error("JDBC - Statement has no parameters. No events will be inserted into SQL as you're not passing any event data. Likely configuration error.")
+    end
+    
     buffer_initialize(
       :max_items => @flush_size,
       :max_interval => @idle_flush_time,
