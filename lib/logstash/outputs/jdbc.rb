@@ -12,8 +12,11 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
 
   config_name "jdbc"
 
-  # Driver class - No longer required
-  config :driver_class, :obsolete => "driver_class is no longer required and can be removed from your configuration"
+  # Driver class - Reintroduced for https://github.com/theangryangel/logstash-output-jdbc/issues/26
+  config :driver_class, :validate => :string
+
+  # Does the JDBC driver support autocommit?
+  config :driver_auto_commit, :validate => :boolean, :default => true, :required => true
 
   # Where to find the jar
   # Defaults to not required, and to the original behaviour
@@ -81,6 +84,10 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
     load_jar_files!
 
     @pool = Java::ComZaxxerHikari::HikariDataSource.new
+
+    @pool.setAutoCommit(@driver_auto_commit)
+    @pool.setDriverClassName(@driver_class) if @driver_class
+
     @pool.setJdbcUrl(@connection_string)
 
     @pool.setUsername(@username) if @username
