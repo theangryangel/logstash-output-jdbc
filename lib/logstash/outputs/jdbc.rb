@@ -83,19 +83,6 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
 
     load_jar_files!
 
-    @pool = Java::ComZaxxerHikari::HikariDataSource.new
-
-    @pool.setAutoCommit(@driver_auto_commit)
-    @pool.setDriverClassName(@driver_class) if @driver_class
-
-    @pool.setJdbcUrl(@connection_string)
-
-    @pool.setUsername(@username) if @username
-    @pool.setPassword(@password) if @password
-
-    @pool.setMaximumPoolSize(@max_pool_size)
-    @pool.setConnectionTimeout(@connection_timeout)
-
     @exceptions_tracker = RingBuffer.new(@max_flush_exceptions)
 
     if (@flush_size > 1000)
@@ -109,6 +96,8 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
     if (!@unsafe_statement and @statement.length < 2) 
       @logger.error("JDBC - Statement has no parameters. No events will be inserted into SQL as you're not passing any event data. Likely configuration error.")
     end
+
+    setup_and_test_pool!
     
     buffer_initialize(
       :max_items => @flush_size,
@@ -151,6 +140,29 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   end
 
   private
+
+  def setup_and_test_pool!  
+    # Setup pool
+    @pool = Java::ComZaxxerHikari::HikariDataSource.new
+
+    @pool.setAutoCommit(@driver_auto_commit)
+    @pool.setDriverClassName(@driver_class) if @driver_class
+
+    @pool.setJdbcUrl(@connection_string)
+
+    @pool.setUsername(@username) if @username
+    @pool.setPassword(@password) if @password
+
+    @pool.setMaximumPoolSize(@max_pool_size)
+    @pool.setConnectionTimeout(@connection_timeout)
+
+    # Test connection
+    test_connection = @pool.getConnection()
+    unless test_connection.isValid(10)
+      @logger.error("JDBC - Connection is not valid. Please check connection string or that your JDBC endpoint is available.")
+    end
+    test_connection.close()
+  end
 
   def load_jar_files!
     # Load jar from driver path
