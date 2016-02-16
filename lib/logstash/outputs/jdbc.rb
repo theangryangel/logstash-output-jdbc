@@ -44,7 +44,7 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   config :max_pool_size, :validate => :number, :default => 5
 
   # Connection timeout
-  config :connection_timeout, :validate => :number, :default => 2800
+  config :connection_timeout, :validate => :number, :default => 10000
 
   # We buffer a certain number of events before flushing that out to SQL.
   # This setting controls how many events will be buffered before sending a
@@ -156,9 +156,11 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
     @pool.setMaximumPoolSize(@max_pool_size)
     @pool.setConnectionTimeout(@connection_timeout)
 
+    validate_connection_timeout = (@connection_timeout / 1000) / 2
+
     # Test connection
     test_connection = @pool.getConnection()
-    unless test_connection.isValid(10)
+    unless test_connection.isValid(validate_connection_timeout)
       @logger.error("JDBC - Connection is not valid. Please check connection string or that your JDBC endpoint is available.")
     end
     test_connection.close()
