@@ -27,7 +27,7 @@ For development:
 ## Installation
   - Run `bin/plugin install logstash-output-jdbc` in your logstash installation directory
   - Now either:
-    - Use driver_path in your configuraton to specify a path to your jar file
+    - Use driver_jar_path in your configuraton to specify a path to your jar file
   - Or:
     - Create the directory vendor/jar/jdbc in your logstash installation (`mkdir -p vendor/jar/jdbc/`)
     - Add JDBC jar files to vendor/jar/jdbc in your logstash installation
