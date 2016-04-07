@@ -46,7 +46,7 @@ Tests are not yet 100% complete.
 | ------ | ---- | ----------- | --------- | ------- |
 | driver_class | String | Specify a driver class if autoloading fails | No | |
 | driver_auto_commit | Boolean | If the driver does not support auto commit, you should set this to false | No | True |
-| driver_path | String | File path to jar file containing your JDBC driver. This is optional, and all JDBC jars may be placed in $LOGSTASH_HOME/vendor/jar/jdbc instead. | No | |
+| driver_jar_path | String | File path to jar file containing your JDBC driver. This is optional, and all JDBC jars may be placed in $LOGSTASH_HOME/vendor/jar/jdbc instead. | No | |
 | connection_string | String | JDBC connection URL | Yes | |
 | username | String | JDBC username - this is optional as it may be included in the connection string, for many drivers | No | |
 | password | String | JDBC password - this is optional as it may be included in the connection string, for many drivers | No | |
