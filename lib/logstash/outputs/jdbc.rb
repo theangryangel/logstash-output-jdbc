@@ -250,9 +250,12 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   def add_statement_event_params(statement, event)
     @statement[1..-1].each_with_index do |i, idx|
       case event[i]
-      when Time, LogStash::Timestamp
+      when Time
         # Most reliable solution, cross JDBC driver
         statement.setString(idx + 1, event[i].iso8601())
+      when LogStash::Timestamp
+        # Most reliable solution, cross JDBC driver
+        statement.setString(idx + 1, event[i].to_iso8601())
       when Fixnum, Integer
         statement.setInt(idx + 1, event[i])
       when Float
