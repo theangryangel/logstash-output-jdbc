@@ -4,92 +4,93 @@ require "stud/temporary"
 require "java"
 
 describe LogStash::Outputs::Jdbc do
-  def fetch_log_table_rowcount
-    # sleep for a second to let the flush happen
-    sleep 1
-    
-    stmt = @sql.createStatement()
-    rs = stmt.executeQuery("select count(*) as total from log")
-    count = 0
-    while rs.next()
-      count = rs.getInt("total")
-    end
-    stmt.close()
 
-    return count
-  end
-
-  let(:base_settings) { { 
-    "driver_jar_path" => @driver_jar_path,
-    "connection_string" => @test_connection_string, 
-    "username" => ENV['SQL_USERNAME'],
-    "password" => ENV['SQL_PASSWORD'],
-    "statement" => [ "insert into log (message) values(?)", "message" ],
-    "max_pool_size" => 1,
-    "flush_size" => 1,
-    "max_flush_exceptions" => 1
-  } }
-  let(:test_settings) { {} }
-  let(:plugin) { LogStash::Outputs::Jdbc.new(base_settings.merge(test_settings)) }
-  let(:event_fields) { { "message" => "This is a message!" } }
-  let(:event) { LogStash::Event.new(event_fields) }
-
-  before(:all) do
-    @driver_jar_path = File.absolute_path(ENV['SQL_JAR'])
-    @test_db_path = File.join(Stud::Temporary.directory, "test.db")
-    @test_connection_string = "jdbc:sqlite:#{@test_db_path}"
-
-    require @driver_jar_path
-
-    @sql = java.sql.DriverManager.get_connection(@test_connection_string, ENV['SQL_USERNAME'].to_s, ENV['SQL_PASSWORD'].to_s)
-    stmt = @sql.createStatement()
-    stmt.executeUpdate("CREATE table log (host text, timestamp datetime, message text);")
-    stmt.close()
-  end
-
-  before(:each) do
-    stmt = @sql.createStatement()
-    stmt.executeUpdate("delete from log")
-    stmt.close()
-  end
-
-  after(:all) do
-   File.unlink(@test_db_path) 
-   Dir.rmdir(File.dirname(@test_db_path))
-  end
-
-  describe "safe statement" do
-    it "should register without errors" do
-      expect { plugin.register }.to_not raise_error
-    end
-
-    it "receive event, without error" do
-      plugin.register
-      expect { plugin.receive(event) }.to_not raise_error
-
-      expect(fetch_log_table_rowcount).to eq(1)
-    end
-
-  end
-
-  describe "unsafe statement" do
-    let(:event_fields) {
-      { "message" => "This is a message!", "table" => "log" }
+  let(:derby_settings) do
+    { 
+      "driver_class" => "org.apache.derby.jdbc.EmbeddedDriver",
+      "connection_string" => "jdbc:derby:memory:testdb;create=true",
+      "driver_jar_path" => ENV['JDBC_DERBY_JAR'],
+      # Grumble. Grumble.
+      # Derby doesn't like 'T' in timestamps as of current writing, so for now
+      # we'll just use CURRENT_TIMESTAMP as opposed to the event @timestamp
+      "statement" => [ "insert into log (created_at, message) values(CURRENT_TIMESTAMP, ?)", "message" ]
     }
-    let(:test_settings) { {
-      "statement" => [ "insert into %{table} (message) values(?)", "message" ],
-      "unsafe_statement" => true
-    } }
-    
-    it "should register without errors" do
-      expect { plugin.register }.to_not raise_error
-    end
+  end
 
-    it "receive event, without error" do
-      plugin.register
-      plugin.receive(event)
-      expect(fetch_log_table_rowcount).to eq(1)
+  context 'rspec setup' do
+
+    it 'ensure derby is available' do
+      j = ENV['JDBC_DERBY_JAR']
+      expect(j).not_to be_nil, "JDBC_DERBY_JAR not defined, required to run tests"
+      expect(File.exists?(j)).to eq(true), "JDBC_DERBY_JAR defined, but not valid"
     end
     
   end
+
+  context 'when initializing' do
+
+    it 'shouldn\'t register without a config' do
+      expect { 
+        LogStash::Plugin.lookup("output", "jdbc").new()
+      }.to raise_error(LogStash::ConfigurationError)
+    end
+
+    it 'shouldn\'t register with a missing jar file' do
+      derby_settings['driver_jar_path'] = nil
+      plugin = LogStash::Plugin.lookup("output", "jdbc").new(derby_settings)
+      expect { plugin.register }.to raise_error
+    end
+
+    it 'shouldn\'t register with a missing jar file' do
+      derby_settings['connection_string'] = nil
+      plugin = LogStash::Plugin.lookup("output", "jdbc").new(derby_settings)
+      expect { plugin.register }.to raise_error
+    end
+
+  end
+
+  context 'when outputting messages' do
+
+    let(:event_fields) do
+      { message: 'test-message' }
+    end
+    let(:event) { LogStash::Event.new(event_fields) }
+    let(:plugin) {
+      # Setup plugin
+      output = LogStash::Plugin.lookup("output", "jdbc").new(derby_settings)
+      output.register
+      if ENV['JDBC_DEBUG'] == '1'
+        output.logger.subscribe(STDOUT)
+      end
+
+      # Setup table
+      c = output.instance_variable_get(:@pool).getConnection()
+      stmt = c.createStatement()
+      stmt.executeUpdate("CREATE table log (created_at timestamp, message varchar(512))")
+      stmt.close()
+      c.close()
+
+      output
+    }
+
+    it 'should save a event' do
+      expect { plugin.receive(event) }.to_not raise_error
+      
+      # Wait for 1 second, for the buffer to flush
+      sleep 1
+
+      c = plugin.instance_variable_get(:@pool).getConnection()
+      stmt = c.createStatement()
+      rs = stmt.executeQuery("select count(*) as total from log")
+      count = 0
+      while rs.next()
+        count = rs.getInt("total")
+      end
+      stmt.close()
+      c.close()
+      expect(count).to be > 0
+    end
+
+  end
+
 end

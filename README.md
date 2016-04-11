@@ -11,16 +11,14 @@ If you do find this works for a JDBC driver not listed, let me know and provide 
 This plugin does not bundle any JDBC jar files, and does expect them to be in a
 particular location. Please ensure you read the 4 installation lines below.
 
-## Headlines
-  - Support for connection pooling added in 0.2.0
-  - Support for unsafe statement handling (allowing dynamic queries) in 0.2.0 
-  - Altered exception handling to now count sequential flushes with exceptions thrown in 0.2.0 
+## ChangeLog
+See CHANGELOG.md
 
 ## Versions
 Released versions are are tagged as of v0.2.1, and available via rubygems.
 
 For development:
-  - See master branch for logstash v2+
+  - See master branch for logstash v2
   - See v1.5 branch for logstash v1.5 
   - See v1.4 branch for logstash 1.4
 
@@ -34,11 +32,14 @@ For development:
   - And then configure (examples below)
 
 ## Running tests
-Assuming valid JDBC jar, and jruby is setup and installed, and you have issued `jruby -S bundle install` in the development directory
-  - `SQL_JAR=path/to/your.jar jruby -S bundle exec rspec`
-If you need to provide username and password you may do this via the environment variables `SQL_USERNAME` and `SQL_PASSWORD`.
+At this time tests only run against Derby, in an in-memory database.
+Acceptance tests for individual database engines will be added over time.
 
-Tests are not yet 100% complete.
+Assuming valid jruby is installed
+  - First time, issue `jruby -S bundle install` to install dependencies
+  - Next, download Derby jar from https://db.apache.org/derby/
+  - Run the tests `JDBC_DERBY_JAR=path/to/derby.jar jruby -S rspec`
+  - Optionally add the `JDBC_DEBUG=1` env variable to add logging to stdout
 
 ## Configuration options
 
