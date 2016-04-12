@@ -1,4 +1,7 @@
-# logstash-output-jdbc
+# logstash-output-jdbc 
+
+[![Build Status](https://travis-ci.org/theangryangel/logstash-output-jdbc.svg?branch=master)](https://travis-ci.org/theangryangel/logstash-output-jdbc)
+
 This plugin is provided as an external plugin and is not part of the Logstash project.
 
 This plugin allows you to output to SQL databases, using JDBC adapters.
@@ -6,7 +9,7 @@ See below for tested adapters, and example configurations.
 
 This has not yet been extensively tested with all JDBC drivers and may not yet work for you.
 
-If you do find this works for a JDBC driver not listed, let me know and provide a small example configuration.
+If you do find this works for a JDBC driver without an example, let me know and provide a small example configuration if you can.
 
 This plugin does not bundle any JDBC jar files, and does expect them to be in a
 particular location. Please ensure you read the 4 installation lines below.
