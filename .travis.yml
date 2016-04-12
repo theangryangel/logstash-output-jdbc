@@ -1,0 +1,8 @@
+language: ruby
+cache: bundler
+rvm:
+  - jruby
+before_script:
+  - wget http://search.maven.org/remotecontent?filepath=org/apache/derby/derby/10.12.1.1/derby-10.12.1.1.jar -O /tmp/derby.jar
+  - export JDBC_DERBY_JAR=/tmp/derby.jar
+script: bundle exec rspec
