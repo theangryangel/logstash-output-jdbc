@@ -18,10 +18,11 @@ particular location. Please ensure you read the 4 installation lines below.
 See CHANGELOG.md
 
 ## Versions
-Released versions are are tagged as of v0.2.1, and available via rubygems.
+Released versions are available via rubygems, and typically tagged.
 
 For development:
-  - See master branch for logstash v2
+  - See master branch for logstash v5
+  - See v2.x branch for logstash v2
   - See v1.5 branch for logstash v1.5 
   - See v1.4 branch for logstash 1.4
 
