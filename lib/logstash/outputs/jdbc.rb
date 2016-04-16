@@ -98,7 +98,7 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
     end
 
     setup_and_test_pool!
-    
+
     buffer_initialize(
       :max_items => @flush_size,
       :max_interval => @idle_flush_time,
@@ -194,56 +194,55 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   end
 
   def safe_flush(events, teardown=false)
-    connection = @pool.getConnection()
-    statement = connection.prepareStatement(@statement[0])
-
-    events.each do |event|
-      next if event.cancelled?
-      next if @statement.length < 2
-      statement = add_statement_event_params(statement, event)
-
-      statement.addBatch()
-    end
-
+    connection = nil
+    statement = nil
     begin
+      connection = @pool.getConnection()
+      statement = connection.prepareStatement(@statement[0])
+
+      events.each do |event|
+        next if event.cancelled?
+        next if @statement.length < 2
+        statement = add_statement_event_params(statement, event)
+
+        statement.addBatch()
+      end
+
       statement.executeBatch()
       statement.close()
       @exceptions_tracker << nil
-      
     rescue => e
-      # Raising an exception will incur a retry from Stud::Buffer.
-      # Since the exceutebatch failed this should mean any events failed to be
-      # inserted will be re-run. We're going to log it for the lols anyway.
       log_jdbc_exception(e)
     ensure
-      connection.close();
+      statement.close() unless statement.nil?
+      connection.close() unless connection.nil?
     end
   end
 
   def unsafe_flush(events, teardown=false)
-    connection = @pool.getConnection()
+    connection = nil
+    statement = nil
+    begin
+      connection = @pool.getConnection()
 
-    events.each do |event|
-      next if event.cancelled?
-      
-      statement = connection.prepareStatement(event.sprintf(@statement[0]))
-      statement = add_statement_event_params(statement, event) if @statement.length > 1
+      events.each do |event|
+        next if event.cancelled?
 
-      begin
+        statement = connection.prepareStatement(event.sprintf(@statement[0]))
+        statement = add_statement_event_params(statement, event) if @statement.length > 1
+
         statement.execute()
-        
+
         # cancel the event, since we may end up outputting the same event multiple times
         # if an exception happens later down the line
         event.cancel
         @exceptions_tracker << nil
-      rescue => e
-        # Raising an exception will incur a retry from Stud::Buffer.
-        # We log for the lols.
-        log_jdbc_exception(e)
-      ensure
-        statement.close()
-        connection.close()
       end
+    rescue => e
+      log_jdbc_exception(e)
+    ensure
+      statement.close() unless statement.nil?
+      connection.close() unless connection.nil?
     end
   end
 

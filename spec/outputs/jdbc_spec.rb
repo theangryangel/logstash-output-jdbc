@@ -88,6 +88,7 @@ describe LogStash::Outputs::Jdbc do
       end
       stmt.close()
       c.close()
+
       expect(count).to be > 0
     end
 
