@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file, from 0.2.0.
 
+## [0.2.6] - 2016-05-02
+  - Fix for exception infinite loop
+
 ## [0.2.5] - 2016-04-11
 ### Added
   - Basic tests running against DerbyDB

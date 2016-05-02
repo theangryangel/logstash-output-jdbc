@@ -277,12 +277,12 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
     statement
   end
 
-  def log_jdbc_exception(e)
-    ce = e
+  def log_jdbc_exception(exception)
+    current_exception = exception
     loop do
-      @logger.error("JDBC Exception encountered: Will automatically retry.", :exception => ce)
-      ce = e.getNextException()
-      break if ce == nil
+      @logger.error("JDBC Exception encountered: Will automatically retry.", :exception => current_exception)
+      current_exception = current_exception.getNextException()
+      break if current_exception == nil
     end
   end
 end # class LogStash::Outputs::jdbc
