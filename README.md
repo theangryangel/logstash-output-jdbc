@@ -21,7 +21,7 @@ See CHANGELOG.md
 Released versions are available via rubygems, and typically tagged.
 
 For development:
-  - See master branch for logstash v5
+  - See master branch for logstash v5 (currently **development only**)
   - See v2.x branch for logstash v2
   - See v1.5 branch for logstash v1.5 
   - See v1.4 branch for logstash 1.4
@@ -36,14 +36,17 @@ For development:
   - And then configure (examples below)
 
 ## Running tests
-At this time tests only run against Derby, in an in-memory database.
-Acceptance tests for individual database engines will be added over time.
+For development tests are recommended to run inside a virtual machine (Vagrantfile is included in the repo), as it requires
+access to various database engines and could completely destroy any data in a live system.
 
-Assuming valid jruby is installed
-  - First time, issue `jruby -S bundle install` to install dependencies
-  - Next, download Derby jar from https://db.apache.org/derby/
-  - Run the tests `JDBC_DERBY_JAR=path/to/derby.jar jruby -S rspec`
-  - Optionally add the `JDBC_DEBUG=1` env variable to add logging to stdout
+If you have vagrant available:
+  - `vagrant up`
+  - `vagrant ssh`
+  - `cd /vagrant`
+  - `gem install bundler`
+  - `cd /vagrant && bundle install`
+  - `./scripts/travis-before_script.sh && source ./scripts/travis-variables.sh`
+  - `bundle exec rspec`
 
 ## Configuration options
 
