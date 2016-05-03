@@ -8,6 +8,7 @@ describe "logstash-output-jdbc: sqlite", if: ENV['JDBC_SQLITE_JAR'] do
     File.delete(JDBC_SQLITE_FILE) if File.exists? JDBC_SQLITE_FILE
   end
 
+  include_context "rspec setup"  
   include_context "when initializing"
   include_context "when outputting messages"
 
