@@ -9,7 +9,7 @@ input
 }
 output {
 	jdbc {
-        driver_class => "com.mysql.jdbc.Driver",
+        driver_class => "com.mysql.jdbc.Driver"
 		connection_string => "jdbc:mysql://HOSTNAME/DATABASE?user=USER&password=PASSWORD"
 		statement => [ "INSERT INTO log (host, timestamp, message) VALUES(?, CAST(? AS timestamp), ?)", "host", "@timestamp", "message" ]
 	}

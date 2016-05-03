@@ -10,6 +10,7 @@ output {
 	stdout { }
 
 	jdbc {
+        driver_class => "org.sqlite.JDBC"
 		connection_string => 'jdbc:sqlite:test.db'
 		statement => [ "INSERT INTO log (host, timestamp, message) VALUES(?, ?, ?)", "host", "@timestamp", "message" ]
 	}

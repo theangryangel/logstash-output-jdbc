@@ -39,7 +39,7 @@ For development:
 For development tests are recommended to run inside a virtual machine (Vagrantfile is included in the repo), as it requires
 access to various database engines and could completely destroy any data in a live system.
 
-If you have vagrant available:
+If you have vagrant available (this is temporary whilst I'm hacking on v5 support. I'll make this more streamlined later):
   - `vagrant up`
   - `vagrant ssh`
   - `cd /vagrant`
