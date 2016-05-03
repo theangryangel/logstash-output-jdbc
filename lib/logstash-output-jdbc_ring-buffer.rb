@@ -14,4 +14,8 @@ class RingBuffer < Array
       self.push(el)
     end
   end
+
+  def not_nil_length
+    reject { |i| i.nil? }.count
+  end
 end

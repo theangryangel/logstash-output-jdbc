@@ -10,6 +10,8 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   # Adds buffer support
   include Stud::Buffer
 
+  STRFTIME_FMT = "%Y-%m-%d %T.%L".freeze
+
   config_name "jdbc"
 
   # Driver class - Reintroduced for https://github.com/theangryangel/logstash-output-jdbc/issues/26
@@ -126,7 +128,7 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
 
     @exceptions_tracker << e.class
 
-    if @exceptions_tracker.reject { |i| i.nil? }.count >= @max_flush_exceptions
+    if @exceptions_tracker.not_nil_length >= @max_flush_exceptions
       @logger.error("JDBC - max_flush_exceptions has been reached")
       log_jdbc_exception(e)
       raise LogStash::ShutdownSignal.new
@@ -250,11 +252,17 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
     @statement[1..-1].each_with_index do |i, idx|
       case event[i]
       when Time
-        # Most reliable solution, cross JDBC driver
-        statement.setString(idx + 1, event[i].iso8601())
+        # See LogStash::Timestamp, below, for the why behind strftime.
+        statement.setString(idx + 1, event[i].strftime(STRFTIME_FMT))
       when LogStash::Timestamp
-        # Most reliable solution, cross JDBC driver
-        statement.setString(idx + 1, event[i].to_iso8601())
+        # XXX: Using setString as opposed to setTimestamp, because setTimestamp 
+        # doesn't behave correctly in some drivers (Known: sqlite)
+        #
+        # Additionally this does not use `to_iso8601`, since some SQL databases 
+        # choke on the 'T' in the string (Known: Derby).
+        #
+        # strftime appears to be the most reliable across drivers.
+        statement.setString(idx + 1, event[i].time.strftime(STRFTIME_FMT))
       when Fixnum, Integer
         statement.setInt(idx + 1, event[i])
       when Float

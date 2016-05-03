@@ -2,3 +2,5 @@
 Gemfile.lock
 Gemfile.bak
 .bundle
+.vagrant
+.mvn
