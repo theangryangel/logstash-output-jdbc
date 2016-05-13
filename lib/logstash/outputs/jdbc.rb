@@ -83,6 +83,7 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   def register
     @logger.info("JDBC - Starting up")
 
+    LogStash::Logger.setup_log4j(@logger)
     load_jar_files!
 
     @exceptions_tracker = RingBuffer.new(@max_flush_exceptions)
@@ -250,10 +251,10 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
 
   def add_statement_event_params(statement, event)
     @statement[1..-1].each_with_index do |i, idx|
-      case event[i]
+      case event.get(i)
       when Time
         # See LogStash::Timestamp, below, for the why behind strftime.
-        statement.setString(idx + 1, event[i].strftime(STRFTIME_FMT))
+        statement.setString(idx + 1, event.get(i).strftime(STRFTIME_FMT))
       when LogStash::Timestamp
         # XXX: Using setString as opposed to setTimestamp, because setTimestamp 
         # doesn't behave correctly in some drivers (Known: sqlite)
@@ -262,19 +263,19 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
         # choke on the 'T' in the string (Known: Derby).
         #
         # strftime appears to be the most reliable across drivers.
-        statement.setString(idx + 1, event[i].time.strftime(STRFTIME_FMT))
+        statement.setString(idx + 1, event.get(i).time.strftime(STRFTIME_FMT))
       when Fixnum, Integer
-        statement.setInt(idx + 1, event[i])
+        statement.setInt(idx + 1, event.get(i))
       when Float
-        statement.setFloat(idx + 1, event[i])
+        statement.setFloat(idx + 1, event.get(i))
       when String
-        statement.setString(idx + 1, event[i])
+        statement.setString(idx + 1, event.get(i))
       when true
         statement.setBoolean(idx + 1, true)
       when false
         statement.setBoolean(idx + 1, false)
       else
-        if event[i].nil? and i =~ /%\{/
+        if event.get(i).nil? and i =~ /%\{/
           statement.setString(idx + 1, event.sprintf(i))
         else
           statement.setString(idx + 1, nil)

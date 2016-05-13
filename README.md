@@ -35,19 +35,6 @@ For development:
     - Add JDBC jar files to vendor/jar/jdbc in your logstash installation
   - And then configure (examples below)
 
-## Running tests
-For development tests are recommended to run inside a virtual machine (Vagrantfile is included in the repo), as it requires
-access to various database engines and could completely destroy any data in a live system.
-
-If you have vagrant available (this is temporary whilst I'm hacking on v5 support. I'll make this more streamlined later):
-  - `vagrant up`
-  - `vagrant ssh`
-  - `cd /vagrant`
-  - `gem install bundler`
-  - `cd /vagrant && bundle install`
-  - `./scripts/travis-before_script.sh && source ./scripts/travis-variables.sh`
-  - `bundle exec rspec`
-
 ## Configuration options
 
 | Option | Type | Description | Required? | Default |
@@ -70,3 +57,21 @@ If you have vagrant available (this is temporary whilst I'm hacking on v5 suppor
 Example logstash configurations, can now be found in the examples directory. Where possible we try to link every configuration with a tested jar.
 
 If you have a working sample configuration, for a DB thats not listed, pull requests are welcome.
+
+## Development and Running tests
+For development tests are recommended to run inside a virtual machine (Vagrantfile is included in the repo), as it requires
+access to various database engines and could completely destroy any data in a live system.
+
+If you have vagrant available (this is temporary whilst I'm hacking on v5 support. I'll make this more streamlined later):
+  - `vagrant up`
+  - `vagrant ssh`
+  - `cd /vagrant`
+  - `gem install bundler`
+  - `cd /vagrant && bundle install && bundle exec rake vendor && bundle exec rake install_jars`
+  - `./scripts/travis-before_script.sh && source ./scripts/travis-variables.sh`
+  - `bundle exec rspec`
+
+## Releasing
+  - `bundle exec rake install_jars`
+  - `gem build logstash-output-jdbc.gemspec`
+  - `gem push`

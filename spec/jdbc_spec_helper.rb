@@ -83,7 +83,7 @@ RSpec.shared_context 'when outputting messages' do
     # Verify the number of items in the output table
     c = plugin.instance_variable_get(:@pool).getConnection()
     stmt = c.prepareStatement("select count(*) as total from #{jdbc_test_table} where message = ?")
-    stmt.setString(1, event['message'])
+    stmt.setString(1, event.get('message'))
     rs = stmt.executeQuery()
     count = 0
     while rs.next()
