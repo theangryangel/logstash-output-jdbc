@@ -2,11 +2,9 @@ language: ruby
 cache: bundler
 rvm:
   - jruby
-before_install:
-  - bundle install
+before_script:
   - bundle exec rake vendor
   - bundle exec rake install_jars
-before_script:
   - ./scripts/travis-before_script.sh
   - source ./scripts/travis-variables.sh
 script: bundle exec rspec
