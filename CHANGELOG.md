@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file, from 0.2.0.
 ## [1.0.0-pre] - UNRELEASED
   - Test coverage extended to multiple SQL engines
   - Change: Timestamps are sent to SQL without timezone (See https://github.com/theangryangel/logstash-output-jdbc/issues/33 for justification)
+  - Change: Removes jar files from repository, in favour of vendoring using jar-dependencies
+  - Change: Updates to logstash-api v2.0 (not yet complete)
+  - Change: Switches from slf4j-nop to log4j for HikariCP logging
 
 ## [0.2.6] - 2016-05-02
   - Fix for exception infinite loop
