@@ -14,7 +14,7 @@ If you do find this works for a JDBC driver without an example, let me know and 
 This plugin does not bundle any JDBC jar files, and does expect them to be in a
 particular location. Please ensure you read the 4 installation lines below.
 
-## ChangeLog
+## Changelog
 See CHANGELOG.md
 
 ## Versions
@@ -27,13 +27,13 @@ For development:
   - See v1.4 branch for logstash 1.4
 
 ## Installation
-  - Run `bin/plugin install logstash-output-jdbc` in your logstash installation directory
+  - Run `bin/logstash-plugin install logstash-output-jdbc` in your logstash installation directory
   - Now either:
     - Use driver_jar_path in your configuraton to specify a path to your jar file
   - Or:
     - Create the directory vendor/jar/jdbc in your logstash installation (`mkdir -p vendor/jar/jdbc/`)
     - Add JDBC jar files to vendor/jar/jdbc in your logstash installation
-  - And then configure (examples below)
+  - And then configure (examples can be found in the examples directory)
 
 ## Configuration options
 
@@ -50,8 +50,9 @@ For development:
 | max_pool_size | Number | Maximum number of connections to open to the SQL server at any 1 time | No | 5 |
 | connection_timeout | Number | Number of seconds before a SQL connection is closed | No | 2800 |
 | flush_size | Number | Maximum number of entries to buffer before sending to SQL - if this is reached before idle_flush_time | No | 1000 |
-| idle_flush_time | Number | Number of idle seconds before sending data to SQL - even if the flush_size has not yet been reached | No | 1 |
-| max_flush_exceptions | Number | Number of sequential flushes which cause an exception, before we stop logstash. Set to a value less than 1 if you never want it to stop. This should be carefully configured with relation to idle_flush_time if your SQL instance is not highly available. | No | 0 |
+| max_flush_exceptions | Number | Number of sequential flushes which cause an exception, before the set of events are discarded. Set to a value less than 1 if you never want it to stop. This should be carefully configured with respect to retry_initial_interval and retry_max_interval, if your SQL server is not highly available | No | 0 |
+| retry_initial_interval | Number | Number of seconds before the initial retry in the event of a failure | No | 2 |
+| retry_max_interval | Number | Maximum number of seconds between each retry | No | 128 |
 
 ## Example configurations
 Example logstash configurations, can now be found in the examples directory. Where possible we try to link every configuration with a tested jar.
