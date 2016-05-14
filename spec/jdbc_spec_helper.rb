@@ -69,16 +69,9 @@ RSpec.shared_context 'when outputting messages' do
   }
 
   it 'should save a event' do
+    expect { plugin.multi_receive([event]) }.to_not raise_error
 
-    previous_exceptions_count = plugin.instance_variable_get(:@exceptions_tracker).not_nil_length
-
-    expect { plugin.receive(event) }.to_not raise_error
-
-    # Force flush the buffer, so that we know anything in the buffer
-    # has been sent
-    plugin.buffer_flush(force: true)
-
-    expect(plugin.instance_variable_get(:@exceptions_tracker).not_nil_length).to eq(previous_exceptions_count)
+    sleep 5
 
     # Verify the number of items in the output table
     c = plugin.instance_variable_get(:@pool).getConnection()

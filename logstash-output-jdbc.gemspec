@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.platform = 'java'
 
   # Files
-  s.files = Dir.glob("{lib,vendor,spec}/**/*") + %w(LICENSE.txt README.md)
+  s.files = Dir.glob("{lib,spec}/**/*.rb") + Dir.glob("vendor/**/*") + %w(LICENSE.txt README.md)
 
    # Tests
   s.test_files = s.files.grep(%r{^(test|spec|features)/})
