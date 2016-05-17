@@ -10,19 +10,22 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   STRFTIME_FMT = "%Y-%m-%d %T.%L".freeze
 
   # Will never work, but only because it duplicates data (i.e. duplicate keys)
-  # Will throw a warning.
+  # Will log a warning, but not retry.
   SQL_STATES_IGNORE = [
-    ### Constraint Violation 
+    ### Class: Unqualified Successful Completion
+    # Success. This shouldn't get thrown, but JDBC driver quality varies, so who knows.
+    0000, 
+    
+    ### Class: Constraint Violation 
     # Integrity constraint violation.
     23000,
     # A violation of the constraint imposed by a unique index or a unique constraint occurred.
     23505
   ]
 
-  # Will never work because of SQL statement errors.
-  # Will throw an error.
+  # Will log an error, but not retry.
   SQL_STATES_FATAL = [
-    ### Data Exception
+    ### Class: Data Exception
     # Character data, right truncation occurred. Field too small.
     22001,
     # Numeric value out of range.
