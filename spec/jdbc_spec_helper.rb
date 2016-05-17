@@ -1,31 +1,26 @@
-require "logstash/devutils/rspec/spec_helper"
-require "logstash/outputs/jdbc"
-require "stud/temporary"
-require "java"
+require 'logstash/devutils/rspec/spec_helper'
+require 'logstash/outputs/jdbc'
+require 'stud/temporary'
+require 'java'
 require 'securerandom'
 
 RSpec.shared_context 'rspec setup' do
-
   it 'ensure jar is available' do
     expect(ENV[jdbc_jar_env]).not_to be_nil, "#{jdbc_jar_env} not defined, required to run tests"
-    expect(File.exists?(ENV[jdbc_jar_env])).to eq(true), "#{jdbc_jar_env} defined, but not valid"
+    expect(File.exist?(ENV[jdbc_jar_env])).to eq(true), "#{jdbc_jar_env} defined, but not valid"
   end
-
 end
 
 RSpec.shared_context 'when initializing' do
-
   it 'shouldn\'t register with a missing jar file' do
     jdbc_settings['driver_jar_path'] = nil
-    plugin = LogStash::Plugin.lookup("output", "jdbc").new(jdbc_settings)
+    plugin = LogStash::Plugin.lookup('output', 'jdbc').new(jdbc_settings)
     expect { plugin.register }.to raise_error
   end
-
 end
 
 RSpec.shared_context 'when outputting messages' do
-
-  let (:jdbc_test_table) do
+  let(:jdbc_test_table) do
     'logstash_output_jdbc_test'
   end
 
@@ -43,30 +38,28 @@ RSpec.shared_context 'when outputting messages' do
 
   let(:event) { LogStash::Event.new(event_fields) }
 
-  let(:plugin) {
+  let(:plugin) do
     # Setup plugin
-    output = LogStash::Plugin.lookup("output", "jdbc").new(jdbc_settings)
+    output = LogStash::Plugin.lookup('output', 'jdbc').new(jdbc_settings)
     output.register
-    if ENV['JDBC_DEBUG'] == '1'
-      output.logger.subscribe(STDOUT)
-    end
+    output.logger.subscribe(STDOUT) if ENV['JDBC_DEBUG'] == '1'
 
     # Setup table
-    c = output.instance_variable_get(:@pool).getConnection()
+    c = output.instance_variable_get(:@pool).getConnection
 
     unless jdbc_drop_table.nil?
-      stmt = c.createStatement()
+      stmt = c.createStatement
       stmt.executeUpdate(jdbc_drop_table)
-      stmt.close()
+      stmt.close
     end
 
-    stmt = c.createStatement()
+    stmt = c.createStatement
     stmt.executeUpdate(jdbc_create_table)
-    stmt.close()
-    c.close()
+    stmt.close
+    c.close
 
     output
-  }
+  end
 
   it 'should save a event' do
     expect { plugin.multi_receive([event]) }.to_not raise_error
@@ -74,18 +67,15 @@ RSpec.shared_context 'when outputting messages' do
     sleep 5
 
     # Verify the number of items in the output table
-    c = plugin.instance_variable_get(:@pool).getConnection()
+    c = plugin.instance_variable_get(:@pool).getConnection
     stmt = c.prepareStatement("select count(*) as total from #{jdbc_test_table} where message = ?")
     stmt.setString(1, event.get('message'))
-    rs = stmt.executeQuery()
+    rs = stmt.executeQuery
     count = 0
-    while rs.next()
-      count = rs.getInt("total")
-    end
-    stmt.close()
-    c.close()
+    count = rs.getInt('total') while rs.next
+    stmt.close
+    c.close
 
     expect(count).to eq(1)
   end
-
 end
