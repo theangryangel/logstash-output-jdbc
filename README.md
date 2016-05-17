@@ -50,8 +50,8 @@ For development:
 | max_pool_size | Number | Maximum number of connections to open to the SQL server at any 1 time | No | 5 |
 | connection_timeout | Number | Number of seconds before a SQL connection is closed | No | 2800 |
 | flush_size | Number | Maximum number of entries to buffer before sending to SQL - if this is reached before idle_flush_time | No | 1000 |
-| max_flush_exceptions | Number | Number of sequential flushes which cause an exception, before the set of events are discarded. Set to a value less than 1 if you never want it to stop. This should be carefully configured with respect to retry_initial_interval and retry_max_interval, if your SQL server is not highly available | No | 0 |
-| retry_initial_interval | Number | Number of seconds before the initial retry in the event of a failure | No | 2 |
+| max_flush_exceptions | Number | Number of sequential flushes which cause an exception, before the set of events are discarded. Set to a value less than 1 if you never want it to stop. This should be carefully configured with respect to retry_initial_interval and retry_max_interval, if your SQL server is not highly available | No | 10 |
+| retry_initial_interval | Number | Number of seconds before the initial retry in the event of a failure. On each failure it will be doubled until it reaches retry_max_interval | No | 2 |
 | retry_max_interval | Number | Maximum number of seconds between each retry | No | 128 |
 
 ## Example configurations
