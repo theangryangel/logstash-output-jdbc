@@ -1,3 +1,4 @@
+# encoding: utf-8
 require 'logstash/devutils/rake'
 require 'jars/installer'
 require 'rubygems'
@@ -9,21 +10,29 @@ task :install_jars do
   Jars::Installer.new.vendor_jars!(false)
 end
 
+def colourize(text, color_code)
+  "\e[#{color_code}m#{text}\e[0m"
+end
+
 desc 'Pre-release checks'
 task :pre_release_checks do
 
   if `git status --porcelain`.chomp.length > 0
-    raise "You have unstaged or uncommitted changes! Please only deploy from a clean working directory!"
+    warn colourize(' ✘ ', 31) + 'You have unstaged or uncommitted changes! Please only release from a clean working directory!'
+  else
+    puts colourize(" ✔ ", 32) + ' No un-staged commits'
   end
 
   spec = Gem::Specification::load("logstash-output-jdbc.gemspec")
   expected_tag_name = "v#{spec.version}"
 
-  current_tag_name = `git describe --exact-match --tags HEAD`.chomp
-  if $? == 0
-    raise "Expected git tag to be '#{expected_tag_name}', but got '#{current_tag_name}'." if current_tag_name != expected_tag_name
+  current_tag_name = `git describe --exact-match --tags HEAD 2>&1`.chomp
+  if $?.success? and current_tag_name == expected_tag_name
+    puts colourize(' ✔ ', 32) + 'Tag matches current HEAD'
+  elsif $?.success? and current_tag_name == expected_tag_name
+    warn colourize(' ✘ ', 31) + "Expected git tag to be '#{expected_tag_name}', but got '#{current_tag_name}'." 
   else
-    raise "Expected git tag to be '#{expected_tag_name}, but got nothing."
+    warn colourize(' ✘ ', 31) + "Expected git tag to be '#{expected_tag_name}, but got nothing."
   end
   
 end

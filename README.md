@@ -73,6 +73,11 @@ If you have vagrant available (this is temporary whilst I'm hacking on v5 suppor
   - `bundle exec rspec`
 
 ## Releasing
+  - Update Changelog
+  - Bump version in gemspec
+  - Commit
+  - Create tag `git tag v<version-number-in-gemspec>`
   - `bundle exec rake install_jars`
+  - `bundle exec rake pre_release_checks`
   - `gem build logstash-output-jdbc.gemspec`
   - `gem push`
