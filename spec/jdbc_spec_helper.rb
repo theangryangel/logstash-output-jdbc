@@ -15,7 +15,7 @@ RSpec.shared_context 'when initializing' do
   it 'shouldn\'t register with a missing jar file' do
     jdbc_settings['driver_jar_path'] = nil
     plugin = LogStash::Plugin.lookup('output', 'jdbc').new(jdbc_settings)
-    expect { plugin.register }.to raise_error
+    expect { plugin.register }.to raise_error(LogStash::ConfigurationError)
   end
 end
 
@@ -63,8 +63,6 @@ RSpec.shared_context 'when outputting messages' do
 
   it 'should save a event' do
     expect { plugin.multi_receive([event]) }.to_not raise_error
-
-    sleep 5
 
     # Verify the number of items in the output table
     c = plugin.instance_variable_get(:@pool).getConnection

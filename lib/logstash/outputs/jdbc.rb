@@ -173,7 +173,7 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   def load_jar_files!
     # Load jar from driver path
     unless @driver_jar_path.nil?
-      raise Exception, 'JDBC - Could not find jar file at given path. Check config.' unless File.exist? @driver_jar_path
+      raise LogStash::ConfigurationError, 'JDBC - Could not find jar file at given path. Check config.' unless File.exist? @driver_jar_path
       require @driver_jar_path
       return
     end
@@ -189,7 +189,7 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
     @logger.debug('JDBC - jarpath', path: jarpath)
 
     jars = Dir[jarpath]
-    raise Exception, 'JDBC - No jars found. Have you read the README?' if jars.empty?
+    raise LogStash::ConfigurationError, 'JDBC - No jars found. Have you read the README?' if jars.empty?
 
     jars.each do |jar|
       @logger.debug('JDBC - Loaded jar', jar: jar)
