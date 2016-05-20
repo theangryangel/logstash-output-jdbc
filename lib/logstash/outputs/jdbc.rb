@@ -14,41 +14,20 @@ require 'logstash-output-jdbc_jars'
 class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   STRFTIME_FMT = '%Y-%m-%d %T.%L'.freeze
 
-  # Will never work, but only because it duplicates data (i.e. duplicate keys)
-  # Will log a warning, but not retry.
-  SQL_STATES_IGNORE = [
-    ### Class: Unqualified Successful Completion
-    # Success. This shouldn't get thrown, but JDBC driver quality varies, so who knows.
-    0000,
-
-    ### Class: Constraint Violation
-    # Integrity constraint violation.
-    23000,
-    # A violation of the constraint imposed by a unique index or a unique constraint occurred.
-    23505
-  ].freeze
-
-  # Will log an error, but not retry.
-  SQL_STATES_FATAL = [
-    ### Class: Data Exception
-    # Character data, right truncation occurred. Field too small.
-    22001,
-    # Numeric value out of range.
-    22003,
-    # A null value is not allowed.
-    22004,
-    # Invalid datetime format.
-    22007,
-    # A parameter or host variable value is invalid.
-    22023,
-    # Character conversion resulted in truncation.
-    22524,
-
-    ### Constraint Violation
-    # The insert or update value of a foreign key is invalid.
-    23503,
-    # The range of values for the identity column or sequence is exhausted.
-    23522
+  RETRYABLE_SQLSTATE_CLASSES = [
+    # Classes of retryable SQLSTATE codes
+    # Not all in the class will be retryable. However, this is the best that 
+    # we've got right now.
+    # If something is missing, or database specific they'll have to do.
+    '08', # Connection Exception
+    '24', # Invalid Cursor State (Maybe retry-able in some circumstances)
+    '25', # Invalid Transaction State 
+    '40', # Transaction Rollback 
+    '53', # Insufficient Resources
+    '54', # Program Limit Exceeded (MAYBE)
+    '55', # Object Not In Prerequisite State
+    '57', # Operator Intervention
+    '58', # System Error
   ].freeze
 
   config_name 'jdbc'
@@ -216,19 +195,13 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
         )
         statement = add_statement_event_params(statement, event) if @statement.length > 1
         statement.execute
-      rescue java.sql.SQLException => e
-        if SQL_STATES_IGNORE.include? e.getSQLState
-          @logger.warn('JDBC - Dropping event. Ignore-able exception (duplicate key most likely)', exception: e, event: event)
-        elsif SQL_STATES_FATAL.include? e.getSQLState
-          @logger.error('JDBC - Fatal SQL exception. Can never succeed. Dropping event.', exception: e, event: event)
+      rescue => e
+        if e.class == java.sql.SQLException and !RETRYABLE_SQLSTATE_CLASSES.include?(e.getSQLState.to_s[0,2])
+          @logger.error('JDBC - Non-retryable SQL exception. Dropping event. If you think this is in error please log an issue with the details from this exception.', exception: e, state_code: e.getSQLState, event: event)
         else
           log_jdbc_exception(e)
           events_to_retry.push(event)
         end
-      rescue => e
-        # Something else happened.
-        log_jdbc_exception(e)
-        events_to_retry.push(event)
       ensure
         statement.close unless statement.nil?
       end

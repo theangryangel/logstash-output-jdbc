@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file, from 0.2.0.
   - Change: Removes jar files from repository, in favour of vendoring using jar-dependencies
   - Change: Updates to logstash-api v2.0 
   - Change: Switches from slf4j-nop to log4j for HikariCP logging
-  - Change: Adds improved support to deal with partially failed batches of inserts
+  - Change: Now selectively retries only a subset of SQL Exceptions
 
 ## [0.2.6] - 2016-05-02
   - Fix for exception infinite loop
