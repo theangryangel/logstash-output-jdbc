@@ -53,6 +53,7 @@ For development:
 | max_flush_exceptions | Number | Number of sequential flushes which cause an exception, before the set of events are discarded. Set to a value less than 1 if you never want it to stop. This should be carefully configured with respect to retry_initial_interval and retry_max_interval, if your SQL server is not highly available | No | 10 |
 | retry_initial_interval | Number | Number of seconds before the initial retry in the event of a failure. On each failure it will be doubled until it reaches retry_max_interval | No | 2 |
 | retry_max_interval | Number | Maximum number of seconds between each retry | No | 128 |
+| retry_sql_states | Array of strings | An array of custom SQL state codes you wish to retry until `max_flush_exceptions`. Useful if you're using a JDBC driver which returns retry-able, but non-standard SQL state codes in it's exceptions. | No | [] |
 
 ## Example configurations
 Example logstash configurations, can now be found in the examples directory. Where possible we try to link every configuration with a tested jar.
