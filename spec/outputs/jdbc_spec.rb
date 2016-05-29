@@ -10,10 +10,7 @@ describe LogStash::Outputs::Jdbc do
       "driver_class" => "org.apache.derby.jdbc.EmbeddedDriver",
       "connection_string" => "jdbc:derby:memory:testdb;create=true",
       "driver_jar_path" => ENV['JDBC_DERBY_JAR'],
-      # Grumble. Grumble.
-      # Derby doesn't like 'T' in timestamps as of current writing, so for now
-      # we'll just use CURRENT_TIMESTAMP as opposed to the event @timestamp
-      "statement" => [ "insert into log (created_at, message) values(CURRENT_TIMESTAMP, ?)", "message" ]
+      "statement" => [ "insert into log (created_at, message) values(?, ?)", "@timestamp" "message" ]
     }
   end
 

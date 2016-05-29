@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file, from 0.2.0.
 
+## [0.2.7.rc1] - 2016-05-29
+  - Backport retry exception logic from v5 branch
+  - Backport improved timestamp compatibility from v5 branch
+
 ## [0.2.6] - 2016-05-02
   - Fix for exception infinite loop
 
