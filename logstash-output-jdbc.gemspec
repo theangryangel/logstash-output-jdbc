@@ -26,10 +26,8 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'stud'
   s.add_runtime_dependency 'logstash-codec-plain'
 
-  # Stuck on HikariCP 2.4.2 until https://github.com/brettwooldridge/HikariCP/issues/600
-  # is resolved.
-  s.requirements << "jar 'com.zaxxer:HikariCP', '2.4.2'"
-  s.requirements << "jar 'org.slf4j:slf4j-log4j12', '1.7.13'"
+  s.requirements << "jar 'com.zaxxer:HikariCP', '2.4.6'"
+  s.requirements << "jar 'org.slf4j:slf4j-log4j12', '1.7.21'"
 
   s.add_development_dependency 'jar-dependencies'
   s.add_development_dependency 'ruby-maven', '~> 3.3'
