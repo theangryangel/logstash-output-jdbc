@@ -1,4 +1,7 @@
 # logstash-output-jdbc
+
+**This is an old version of the plugin, for Logstash v1.5 only. It is no longer receiving backports of fixes and contains several flaws which have been addressed in the Logstash v2 compatible versions, and above. Please upgrade/see the other branches in the source repository.**
+
 This plugin is provided as an external plugin and is not part of the Logstash project.
 
 This plugin allows you to output to SQL databases, using JDBC adapters.
