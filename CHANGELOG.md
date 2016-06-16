@@ -9,6 +9,10 @@ All notable changes to this project will be documented in this file, from 0.2.0.
   - Change: Switches from slf4j-nop to log4j for HikariCP logging
   - Change: Now selectively retries only a subset of SQL Exceptions
 
+## [0.2.7] - 2016-05-29
+  - Backport retry exception logic from v5 branch
+  - Backport improved timestamp compatibility from v5 branch
+
 ## [0.2.6] - 2016-05-02
   - Fix for exception infinite loop
 
