@@ -1,8 +1,9 @@
 # logstash-jdbc
+
+**This is an old version of the plugin, for Logstash v1.4 only. It is no longer receiving backports of fixes and contains several flaws which have been addressed in the Logstash v2 compatible versions, and above. Please upgrade/see the other branches in the source repository.**
+
 JDBC output plugin for Logstash.
 This plugin is provided as an external plugin and is not part of the Logstash project.
-
-Currently untested with logstash 1.5+. Support is planned.
 
 ## Warning
 This has not yet been extensively tested with all JDBC drivers and may not yet work for you.
