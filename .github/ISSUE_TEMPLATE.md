@@ -1,12 +1,13 @@
+<!-- 
+Please remember that I have not got access to, nor tested, every JDBC driver available. Nor do I have experience with every database engine.  
+Help me, to help you, by giving me as much information as possible, and understand that I won't necessarily have the answers.
+-->
+
 <!--- Provide a general summary of the issue in the Title above -->
 
-## Expected Behavior
-<!--- If you're describing a bug, tell us what should happen -->
+## Expected & Actual Behavior
+<!--- If you're describing a bug, tell us what should happen, and what is actually happening -->
 <!--- If you're suggesting a change/improvement, tell us how it should work -->
-
-## Current Behavior
-<!--- If describing a bug, tell us what happens instead of the expected behavior -->
-<!--- If suggesting a change/improvement, explain the difference from current behavior -->
 
 ## Possible Solution
 <!--- Not obligatory, but suggest a fix/reason for the bug, -->
