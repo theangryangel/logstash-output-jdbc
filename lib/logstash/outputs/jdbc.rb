@@ -334,7 +334,10 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   end
 
   def retry_exception?(exception)
-    return (exception.class != java.sql.SQLException or 
-      RETRYABLE_SQLSTATE_CLASSES.include?(e.getSQLState[0,2]))
+    if exception.respond_to? 'getSQLState'
+      return RETRYABLE_SQLSTATE_CLASSES.include?(e.getSQLState[0,2])
+    end
+
+    true
   end
 end # class LogStash::Outputs::jdbc
