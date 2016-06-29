@@ -3,6 +3,7 @@ require 'logstash/outputs/jdbc'
 require 'stud/temporary'
 require 'java'
 require 'securerandom'
+require 'mkmf'
 
 RSpec.shared_context 'rspec setup' do
   it 'ensure jar is available' do
@@ -109,9 +110,18 @@ RSpec.shared_context 'when outputting messages' do
 
     # Start a thread to stop and restart the service.
     t = Thread.new(systemd_database_service) { |systemd_database_service|
-      `sudo systemctl stop #{systemd_database_service}`
+      start_stop_cmd = 'sudo /etc/init.d/%<service>s %<action>s'
+
+      if find_executable('systemctl')
+        start_stop_cmd = 'sudo systemctl %<action>s %<service>s'
+      end
+
+      cmd = start_stop_cmd % { action: 'stop', service: systemd_database_service }
+      `#{cmd}`
       sleep 10
-      `sudo systemctl start #{systemd_database_service}`
+
+      cmd = start_stop_cmd % { action: 'start', service: systemd_database_service }
+      `#{cmd}`
     }
 
     # Wait a few seconds to the service to stop
