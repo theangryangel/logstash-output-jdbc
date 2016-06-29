@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file, from 0.2.0.
 
+## [0.2.9] - 2016-06-29
+  - Fix NameError exception. 
+  - Moved log_jdbc_exception calls
+
 ## [0.2.7] - 2016-05-29
   - Backport retry exception logic from v5 branch
   - Backport improved timestamp compatibility from v5 branch

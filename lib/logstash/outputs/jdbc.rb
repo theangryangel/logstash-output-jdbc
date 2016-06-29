@@ -151,7 +151,6 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
 
     if @exceptions_tracker.reject { |i| i.nil? }.count >= @max_flush_exceptions
       @logger.error("JDBC - max_flush_exceptions has been reached")
-      log_jdbc_exception(e)
       raise LogStash::ShutdownSignal.new
     end
   end
@@ -223,7 +222,7 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
     begin
       connection = @pool.getConnection()
     rescue => e
-      log_jdbc_exception(e)
+      log_jdbc_exception(e, true)
       raise
     end
 
@@ -242,7 +241,6 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
       statement.close()
       @exceptions_tracker << nil
     rescue => e
-      log_jdbc_exception(e)
       if retry_exception?(e)
         raise
       end
@@ -258,7 +256,7 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
     begin
       connection = @pool.getConnection()
     rescue => e
-      log_jdbc_exception(e)
+      log_jdbc_exception(e, true)
       raise
     end
 
@@ -277,7 +275,6 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
         @exceptions_tracker << nil
       end
     rescue => e
-      log_jdbc_exception(e)
       if retry_exception?(e)
         raise
       end
@@ -324,20 +321,23 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
     statement
   end
 
-  def log_jdbc_exception(exception)
+  def log_jdbc_exception(exception, retrying)
     current_exception = exception
     loop do
-      @logger.error("JDBC Exception encountered: Will automatically retry.", :exception => current_exception)
+      if retrying
+        @logger.error("JDBC Exception. Retrying.", :exception => current_exception)
+      else
+        @logger.error("JDBC Exception. No retry.", :exception => current_exception)
+      end
       current_exception = current_exception.getNextException()
       break if current_exception == nil
     end
   end
 
   def retry_exception?(exception)
-    if exception.respond_to? 'getSQLState'
-      return RETRYABLE_SQLSTATE_CLASSES.include?(e.getSQLState[0,2])
-    end
+    retrying = (exception.respond_to? 'getSQLState' and RETRYABLE_SQLSTATE_CLASSES.include?(exception.getSQLState[0,2]))
+    log_jdbc_exception(exception, retrying)
 
-    true
+    retrying
   end
 end # class LogStash::Outputs::jdbc
