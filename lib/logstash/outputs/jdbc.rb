@@ -185,7 +185,7 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
     begin
       connection = @pool.getConnection
     rescue => e
-      log_jdbc_exception(e)
+      log_jdbc_exception(e, true)
       # If a connection is not available, then the server has gone away
       # We're not counting that towards our retry count.
       return events, false
@@ -200,10 +200,7 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
         statement.execute
       rescue => e
         if retry_exception?(e)
-          log_jdbc_exception(e)
           events_to_retry.push(event)
-        else
-          @logger.error('JDBC - Non-retryable exception. Dropping event. If you think this is in error please log an issue with the details from this exception.', exception: e, event: event)
         end
       ensure
         statement.close unless statement.nil?
@@ -283,16 +280,20 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   end
 
   def retry_exception?(exception)
-    return (exception.class != java.sql.SQLException or (
-      RETRYABLE_SQLSTATE_CLASSES.include?(e.getSQLState[0,2]) or 
-      @retry_sql_states.include?(e.getSQLState)
-    ))
+    retrying = (exception.respond_to? 'getSQLState' and (RETRYABLE_SQLSTATE_CLASSES.include?(exception.getSQLState[0,2]) or @retry_sql_states.include?(exception.getSQLState)))
+    log_jdbc_exception(exception, retrying)
+
+    retrying
   end
 
-  def log_jdbc_exception(exception)
+  def log_jdbc_exception(exception, retrying)
     current_exception = exception
     loop do
-      @logger.warn('JDBC Exception encountered: Will automatically retry.', exception: current_exception)
+      if retrying
+        @logger.warn('JDBC Exception. Retrying.', exception: current_exception)
+      else
+        @logger.warn('JDBC Exception. Not retrying. Dropping event.', exception: current_exception)
+      end
       current_exception = current_exception.getNextException
       break if current_exception.nil?
     end
