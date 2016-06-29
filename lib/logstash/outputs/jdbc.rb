@@ -217,7 +217,7 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
     submit_actions = actions
     count_as_attempt = true
 
-    attempts = 0
+    attempts = 1
 
     sleep_interval = @retry_initial_interval
     while @stopping.false? and (submit_actions and !submit_actions.empty?)
@@ -280,7 +280,7 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   end
 
   def retry_exception?(exception)
-    retrying = (exception.respond_to? 'getSQLState' and (RETRYABLE_SQLSTATE_CLASSES.include?(exception.getSQLState[0,2]) or @retry_sql_states.include?(exception.getSQLState)))
+    retrying = (exception.respond_to? 'getSQLState' and (RETRYABLE_SQLSTATE_CLASSES.include?(exception.getSQLState.to_s[0,2]) or @retry_sql_states.include?(exception.getSQLState)))
     log_jdbc_exception(exception, retrying)
 
     retrying
@@ -290,9 +290,9 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
     current_exception = exception
     loop do
       if retrying
-        @logger.warn('JDBC Exception. Retrying.', exception: current_exception)
+        @logger.warn('JDBC - Exception. Retrying.', exception: current_exception)
       else
-        @logger.warn('JDBC Exception. Not retrying. Dropping event.', exception: current_exception)
+        @logger.error('JDBC - Exception. Not retrying. Dropping event.', exception: current_exception)
       end
       current_exception = current_exception.getNextException
       break if current_exception.nil?
