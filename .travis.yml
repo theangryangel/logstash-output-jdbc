@@ -1,14 +1,10 @@
 sudo: required
-dist: trusty
 language: ruby
 cache: bundler
 rvm:
   - jruby-1.7.25
 jdk:
   - oraclejdk8
-before_install:
-  - export JRUBY_OPTS='--client -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -Xcext.enabled=false -J-Xss2m -Xcompile.invokedynamic=false'
-  - gem install bundler
 before_script:
   - bundle exec rake vendor
   - bundle exec rake install_jars
