@@ -1,13 +1,14 @@
 sudo: required
 dist: trusty
 language: ruby
+cache: bundler
 rvm:
   - jruby-1.7.25
 jdk:
   - oraclejdk8
-before_script:
+before_install:
   - gem install bundler
-  - bundle install
+before_script:
   - bundle exec rake vendor
   - bundle exec rake install_jars
   - ./scripts/travis-before_script.sh
