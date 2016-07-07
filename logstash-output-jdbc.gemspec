@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'logstash-output-jdbc'
-  s.version = "0.2.9"
+  s.version = "0.2.10"
   s.licenses = [ "Apache License (2.0)" ]
   s.summary = "This plugin allows you to output to SQL, via JDBC"
   s.description = "This gem is a logstash plugin required to be installed on top of the Logstash core pipeline using $LS_HOME/bin/plugin install gemname. This gem is not a stand-alone program"
@@ -19,11 +19,11 @@ Gem::Specification.new do |s|
   s.metadata = { "logstash_plugin" => "true", "logstash_group" => "output" }
 
   # Gem dependencies
-  s.add_runtime_dependency "logstash-core", ">= 2.0.0.beta2", "< 3.0.0"
   s.add_runtime_dependency 'stud'
-  s.add_runtime_dependency "logstash-codec-plain"
-  
-  s.add_development_dependency "logstash-devutils"
 
-  s.post_install_message = "logstash-output-jdbc 0.2.0 introduces several new features - please ensure you check the documentation in the README file"
+  s.add_runtime_dependency "logstash-core", ">= 2.0.0", "< 3.0.0"
+  s.add_runtime_dependency "logstash-codec-plain"
+
+  # https://github.com/elastic/logstash-devutils/issues/48
+  s.add_development_dependency "logstash-devutils", '0.0.18'
 end

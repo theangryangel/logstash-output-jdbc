@@ -288,11 +288,11 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
     @statement[1..-1].each_with_index do |i, idx|
       value = event[i]
 
-      if value.nil? and i.to_s =~ /%{/
-        value = event.sprintf(i)
-      else
-        value = i
-      end
+      value = if value.nil? and i.to_s =~ /%{/
+                event.sprintf(i)
+              else
+                value
+              end
 
       case value
       when Time
@@ -325,10 +325,11 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
 
   def log_jdbc_exception(exception, retrying)
     current_exception = exception
-    log_text = 'JDBC Exception. ' + (retrying ? 'Retrying' : 'No retry') + '.'
+    log_text = 'JDBC - Exception. ' + (retrying ? 'Retrying' : 'Not retrying') + '.'
+    log_method = (retrying ? 'warn' : 'error')
 
     loop do
-      @logger.error(log_text, :exception => current_exception, :backtrace => current_exception.backtrace)
+      @logger.send(log_method, log_text, :exception => current_exception, :backtrace => current_exception.backtrace)
 
       if current_exception.respond_to? 'getNextException'
         current_exception = current_exception.getNextException()
@@ -341,7 +342,7 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   end
 
   def retry_exception?(exception)
-    retrying = (exception.respond_to? 'getSQLState' and RETRYABLE_SQLSTATE_CLASSES.include?(exception.getSQLState[0,2]))
+    retrying = (exception.respond_to? 'getSQLState' and RETRYABLE_SQLSTATE_CLASSES.include?(exception.getSQLState.to_s[0,2]))
     log_jdbc_exception(exception, retrying)
 
     retrying
