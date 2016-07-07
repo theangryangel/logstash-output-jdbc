@@ -10,7 +10,7 @@ describe 'logstash-output-jdbc: derby', if: ENV['JDBC_DERBY_JAR'] do
   end
 
   let(:jdbc_create_table) do
-    "CREATE table #{jdbc_test_table} (created_at timestamp not null, message varchar(512) not null)"
+    "CREATE table #{jdbc_test_table} (created_at timestamp not null, message varchar(512) not null, message_sprintf varchar(512) not null, static_int int not null, static_bit boolean not null)"
   end
  
   let(:jdbc_settings) do
@@ -18,7 +18,7 @@ describe 'logstash-output-jdbc: derby', if: ENV['JDBC_DERBY_JAR'] do
       'driver_class' => 'org.apache.derby.jdbc.EmbeddedDriver',
       'connection_string' => 'jdbc:derby:memory:testdb;create=true',
       'driver_jar_path' => ENV[jdbc_jar_env],
-      'statement' => ['insert into logstash_output_jdbc_test (created_at, message) values(?, ?)', '@timestamp', 'message'],
+      'statement' => jdbc_statement,
       'max_flush_exceptions' => 1
     }
   end

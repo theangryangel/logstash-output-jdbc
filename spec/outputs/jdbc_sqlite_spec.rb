@@ -20,7 +20,7 @@ describe 'logstash-output-jdbc: sqlite', if: ENV['JDBC_SQLITE_JAR'] do
       'driver_class' => 'org.sqlite.JDBC',
       'connection_string' => "jdbc:sqlite:#{JDBC_SQLITE_FILE}",
       'driver_jar_path' => ENV[jdbc_jar_env],
-      'statement' => ["insert into #{jdbc_test_table} (created_at, message) values(?, ?)", '@timestamp', 'message'],
+      'statement' => jdbc_statement,
       'max_flush_exceptions' => 1
     }
   end
