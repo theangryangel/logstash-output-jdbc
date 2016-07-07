@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file, from 0.2.0.
 
+## [0.2.10] - 2016-07-07
+  - Support non-string entries in statement array
+  - Adds backtrace to exception logging
+
 ## [0.2.9] - 2016-06-29
   - Fix NameError exception. 
   - Moved log_jdbc_exception calls

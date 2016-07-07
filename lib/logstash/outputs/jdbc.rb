@@ -286,14 +286,15 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
 
   def add_statement_event_params(statement, event)
     @statement[1..-1].each_with_index do |i, idx|
-      value = event[i]
-
-      value = if value.nil? and i.to_s =~ /%{/
-                event.sprintf(i)
-              else
-                value
-              end
-
+      if i.is_a? String 
+        value = event[i]
+        if value.nil? and i =~ /%\{/
+          value = event.sprintf(i)
+        end
+      else
+        value = i
+      end
+      
       case value
       when Time
         # See LogStash::Timestamp, below, for the why behind strftime.
@@ -322,6 +323,7 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
 
     statement
   end
+
 
   def log_jdbc_exception(exception, retrying)
     current_exception = exception
