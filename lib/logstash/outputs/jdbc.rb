@@ -284,7 +284,7 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   end
 
   def retry_exception?(exception)
-    retrying = (exception.respond_to? 'getSQLState' and (RETRYABLE_SQLSTATE_CLASSES.include?(exception.getSQLState[0,2]) or @retry_sql_states.include?(exception.getSQLState)))
+    retrying = (exception.respond_to? 'getSQLState' and (RETRYABLE_SQLSTATE_CLASSES.include?(exception.getSQLState.to_s[0,2]) or @retry_sql_states.include?(exception.getSQLState)))
     log_jdbc_exception(exception, retrying)
 
     retrying
@@ -292,10 +292,11 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
 
   def log_jdbc_exception(exception, retrying)
     current_exception = exception
-    log_text = 'JDBC Exception. ' + (retrying ? 'Retrying' : 'No retry') + '.'
+    log_text = 'JDBC - Exception. ' + (retrying ? 'Retrying' : 'Not retrying') + '.'
+    log_method = (retrying ? 'warn' : 'error')
 
     loop do
-      @logger.error(log_text, :exception => current_exception, :backtrace => current_exception.backtrace)
+      @logger.send(log_method, log_text, :exception => current_exception, :backtrace => current_exception.backtrace)
 
       if current_exception.respond_to? 'getNextException'
         current_exception = current_exception.getNextException()
