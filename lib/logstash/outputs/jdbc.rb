@@ -246,10 +246,18 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
 
   def add_statement_event_params(statement, event)
     @statement[1..-1].each_with_index do |i, idx|
-      case event.get(i)
+      value = event[i]
+
+      value = if value.nil? and i.to_s =~ /%{/
+                event.sprintf(i)
+              else
+                value
+              end
+
+      case value
       when Time
         # See LogStash::Timestamp, below, for the why behind strftime.
-        statement.setString(idx + 1, event.get(i).strftime(STRFTIME_FMT))
+        statement.setString(idx + 1, value.strftime(STRFTIME_FMT))
       when LogStash::Timestamp
         # XXX: Using setString as opposed to setTimestamp, because setTimestamp
         # doesn't behave correctly in some drivers (Known: sqlite)
@@ -258,21 +266,17 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
         # choke on the 'T' in the string (Known: Derby).
         #
         # strftime appears to be the most reliable across drivers.
-        statement.setString(idx + 1, event.get(i).time.strftime(STRFTIME_FMT))
+        statement.setString(idx + 1, value.time.strftime(STRFTIME_FMT))
       when Fixnum, Integer
-        statement.setInt(idx + 1, event.get(i))
+        statement.setInt(idx + 1, value)
       when Float
-        statement.setFloat(idx + 1, event.get(i))
+        statement.setFloat(idx + 1, value)
       when String
-        statement.setString(idx + 1, event.get(i))
+        statement.setString(idx + 1, value)
       when true, false
-        statement.setBoolean(idx + 1, event.get(i))
+        statement.setBoolean(idx + 1, value)
       else
-        if event.get(i).nil? && i =~ /%\{/
-          statement.setString(idx + 1, event.sprintf(i))
-        else
-          statement.setString(idx + 1, nil)
-        end
+        statement.setString(idx + 1, nil)
       end
     end
 
@@ -280,7 +284,7 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   end
 
   def retry_exception?(exception)
-    retrying = (exception.respond_to? 'getSQLState' and (RETRYABLE_SQLSTATE_CLASSES.include?(exception.getSQLState.to_s[0,2]) or @retry_sql_states.include?(exception.getSQLState)))
+    retrying = (exception.respond_to? 'getSQLState' and (RETRYABLE_SQLSTATE_CLASSES.include?(exception.getSQLState[0,2]) or @retry_sql_states.include?(exception.getSQLState)))
     log_jdbc_exception(exception, retrying)
 
     retrying
@@ -288,14 +292,18 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
 
   def log_jdbc_exception(exception, retrying)
     current_exception = exception
+    log_text = 'JDBC Exception. ' + (retrying ? 'Retrying' : 'No retry') + '.'
+
     loop do
-      if retrying
-        @logger.warn('JDBC - Exception. Retrying.', exception: current_exception)
+      @logger.error(log_text, :exception => current_exception, :backtrace => current_exception.backtrace)
+
+      if current_exception.respond_to? 'getNextException'
+        current_exception = current_exception.getNextException()
       else
-        @logger.error('JDBC - Exception. Not retrying. Dropping event.', exception: current_exception)
+        current_exception = nil
       end
-      current_exception = current_exception.getNextException
-      break if current_exception.nil?
+
+      break if current_exception == nil
     end
   end
 
