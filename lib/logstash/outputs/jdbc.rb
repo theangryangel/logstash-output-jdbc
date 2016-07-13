@@ -12,6 +12,8 @@ require 'logstash-output-jdbc_jars'
 # includes correctly crafting the SQL statement, and matching the number of
 # parameters correctly.
 class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
+  declare_threadsafe! if self.respond_to?(:declare_threadsafe!)
+
   STRFTIME_FMT = '%Y-%m-%d %T.%L'.freeze
 
   RETRYABLE_SQLSTATE_CLASSES = [
@@ -61,7 +63,7 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   config :unsafe_statement, validate: :boolean, default: false
 
   # Number of connections in the pool to maintain
-  config :max_pool_size, validate: :number, default: 5
+  config :max_pool_size, validate: :number, default: 24
 
   # Connection timeout
   config :connection_timeout, validate: :number, default: 10000
