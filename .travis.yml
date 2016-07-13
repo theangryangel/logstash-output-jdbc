@@ -1,8 +1,11 @@
+sudo: required
 language: ruby
 cache: bundler
 rvm:
   - jruby
 before_script:
-  - wget http://search.maven.org/remotecontent?filepath=org/apache/derby/derby/10.12.1.1/derby-10.12.1.1.jar -O /tmp/derby.jar
-  - export JDBC_DERBY_JAR=/tmp/derby.jar
+  - bundle exec rake vendor
+  - bundle exec rake install_jars
+  - ./scripts/travis-before_script.sh
+  - source ./scripts/travis-variables.sh
 script: bundle exec rspec
