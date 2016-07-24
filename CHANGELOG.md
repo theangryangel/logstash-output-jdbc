@@ -1,11 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file, from 0.2.0.
 
-## [0.3.0.pre] - 2016-07-13
+## [0.3.0] - 2016-07-24
   - Brings tests from v5 branch, providing greater coverage
   - Removes bulk update support, due to inconsistent behaviour
   - Plugin now marked as threadsafe, meaning only 1 instance per-Logstash
-    - Raises default max_pool_size to match the default number of works (1 connection per worker)
+    - Raises default max_pool_size to match the default number of workers (1 connection per worker)
 
 ## [0.2.10] - 2016-07-07
   - Support non-string entries in statement array
