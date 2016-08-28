@@ -83,6 +83,9 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   # Suitable for configuring retryable custom JDBC SQL state codes.
   config :retry_sql_states, validate: :array, default: []
 
+  # Run a connection test on start.
+  config :connection_test, validate: :boolean, default: true
+
   # Maximum number of sequential failed attempts, before we stop retrying.
   # If set to < 1, then it will infinitely retry.
   # At the default values this is a little over 10 minutes
@@ -148,10 +151,12 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
 
     validate_connection_timeout = (@connection_timeout / 1000) / 2
 
+    return unless @connection_test
+
     # Test connection
     test_connection = @pool.getConnection
     unless test_connection.isValid(validate_connection_timeout)
-      @logger.error('JDBC - Connection is not valid. Please check connection string or that your JDBC endpoint is available.')
+      @logger.error('JDBC - Connection is not reporting as validate. Either connection is invalid, or driver is not getting the appropriate response.')
     end
     test_connection.close
   end
