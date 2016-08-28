@@ -1,13 +1,23 @@
 # Change Log
 All notable changes to this project will be documented in this file, from 0.2.0.
 
-## [1.0.0-pre] - UNRELEASED
-  - Test coverage extended to multiple SQL engines
-  - Change: Timestamps are sent to SQL without timezone (See https://github.com/theangryangel/logstash-output-jdbc/issues/33 for justification)
-  - Change: Removes jar files from repository, in favour of vendoring using jar-dependencies
-  - Change: Updates to logstash-api v2.0 
-  - Change: Switches from slf4j-nop to log4j for HikariCP logging
-  - Change: Now selectively retries only a subset of SQL Exceptions
+## [0.3.1] = 2016-08-28
+  - Adds connection_test configuration option, to prevent the connection test from occuring, allowing the error to be suppressed.
+    Useful for cockroachdb deployments. https://github.com/theangryangel/logstash-output-jdbc/issues/53 
+
+## [0.3.0] - 2016-07-24
+  - Brings tests from v5 branch, providing greater coverage
+  - Removes bulk update support, due to inconsistent behaviour
+  - Plugin now marked as threadsafe, meaning only 1 instance per-Logstash
+    - Raises default max_pool_size to match the default number of workers (1 connection per worker)
+
+## [0.2.10] - 2016-07-07
+  - Support non-string entries in statement array
+  - Adds backtrace to exception logging
+
+## [0.2.9] - 2016-06-29
+  - Fix NameError exception. 
+  - Moved log_jdbc_exception calls
 
 ## [0.2.7] - 2016-05-29
   - Backport retry exception logic from v5 branch
