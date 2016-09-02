@@ -98,7 +98,6 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   def register
     @logger.info('JDBC - Starting up')
 
-    LogStash::Logger.setup_log4j(@logger)
     load_jar_files!
 
     @stopping = Concurrent::AtomicBoolean.new(false)
@@ -152,7 +151,7 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
     # Test connection
     test_connection = @pool.getConnection
     unless test_connection.isValid(validate_connection_timeout)
-      @logger.error('JDBC - Connection is not reporting as validate. Either connection is invalid, or driver is not getting the appropriate response.')
+      @logger.warn('JDBC - Connection is not reporting as validate. Either connection is invalid, or driver is not getting the appropriate response.')
     end
     test_connection.close
   end
@@ -173,13 +172,13 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
                 File.join(File.dirname(__FILE__), '../../../vendor/jar/jdbc/*.jar')
               end
 
-    @logger.debug('JDBC - jarpath', path: jarpath)
+    @logger.trace('JDBC - jarpath', path: jarpath)
 
     jars = Dir[jarpath]
     raise LogStash::ConfigurationError, 'JDBC - No jars found. Have you read the README?' if jars.empty?
 
     jars.each do |jar|
-      @logger.debug('JDBC - Loaded jar', jar: jar)
+      @logger.trace('JDBC - Loaded jar', jar: jar)
       require jar
     end
   end
