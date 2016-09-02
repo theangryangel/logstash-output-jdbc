@@ -1,6 +1,6 @@
 # logstash-output-jdbc 
 
-[![Build Status](https://travis-ci.org/theangryangel/logstash-output-jdbc.svg?branch=master)](https://travis-ci.org/theangryangel/logstash-output-jdbc)
+[![Build Status](https://travis-ci.org/theangryangel/logstash-output-jdbc.svg?branch=master)](https://travis-ci.org/theangryangel/logstash-output-jdbc) - This branch is targetting v5 of Logstash and will have frequent breakages.
 
 This plugin is provided as an external plugin and is not part of the Logstash project.
 
