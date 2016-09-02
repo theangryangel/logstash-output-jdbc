@@ -49,10 +49,12 @@ RSpec.shared_context 'when outputting messages' do
   let(:event) { LogStash::Event.new(event_fields) }
 
   let(:plugin) do
+    # Setup logger
+    expect(LogStash::Ouputs::Jdbc).to receive(:logger).and_return(logger).at_least(:once)
+
     # Setup plugin
     output = LogStash::Plugin.lookup('output', 'jdbc').new(jdbc_settings)
     output.register
-    output.logger = logger
 
     # Setup table
     c = output.instance_variable_get(:@pool).getConnection
