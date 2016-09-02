@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+  <Appenders>
+    <File name="file" fileName="log4j2.log">
+      <PatternLayout pattern="%d{yyyy-mm-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+    </File>
+  </Appenders>
+
+  <Loggers>
+    <!-- If we need to figure out whats happening for development purposes, disable this -->
+    <Logger name="com.zaxxer.hikari" level="off" />
+
+    <Root level="debug">
+      <AppenderRef ref="file"/>
+    </Root>
+  </Loggers>
+</Configuration>

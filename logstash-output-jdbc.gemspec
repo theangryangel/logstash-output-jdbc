@@ -22,11 +22,11 @@ Gem::Specification.new do |s|
   s.metadata = { 'logstash_plugin' => 'true', 'logstash_group' => 'output' }
 
   # Gem dependencies
-  s.add_runtime_dependency 'logstash-core-plugin-api', '~> 2.0'
+  s.add_runtime_dependency 'logstash-core-plugin-api', '>= 1.60', '<= 2.99'
   s.add_runtime_dependency 'stud'
   s.add_runtime_dependency 'logstash-codec-plain'
 
-  s.requirements << "jar 'com.zaxxer:HikariCP', '2.4.6'"
+  s.requirements << "jar 'com.zaxxer:HikariCP', '2.4.7'"
   s.requirements << "jar 'org.slf4j:slf4j-log4j12', '1.7.21'"
 
   s.add_development_dependency 'jar-dependencies'

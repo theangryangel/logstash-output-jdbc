@@ -20,7 +20,9 @@ RSpec.shared_context 'when initializing' do
 end
 
 RSpec.shared_context 'when outputting messages' do
-  let(:logger) { double("logger") }
+  let(:logger) { 
+    double("logger")
+  }
 
   let(:jdbc_test_table) do
     'logstash_output_jdbc_test'
@@ -50,7 +52,16 @@ RSpec.shared_context 'when outputting messages' do
 
   let(:plugin) do
     # Setup logger
-    expect(LogStash::Ouputs::Jdbc).to receive(:logger).and_return(logger).at_least(:once)
+    allow(LogStash::Outputs::Jdbc).to receive(:logger).and_return(logger)
+    
+    # XXX: Suppress reflection logging. There has to be a better way around this.
+    allow(logger).to receive(:debug).with(/config LogStash::/)
+
+    # Suppress beta warnings.
+    allow(logger).to receive(:info).with(/Please let us know if you find bugs or have suggestions on how to improve this plugin./)
+
+    # Suppress start up messages.
+    expect(logger).to receive(:info).once.with(/JDBC - Starting up/)
 
     # Setup plugin
     output = LogStash::Plugin.lookup('output', 'jdbc').new(jdbc_settings)
