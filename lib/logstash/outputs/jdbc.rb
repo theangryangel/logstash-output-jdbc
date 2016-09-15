@@ -260,7 +260,7 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
       else
         value = i
       end
-      
+
       case value
       when Time
         # See LogStash::Timestamp, below, for the why behind strftime.
@@ -275,7 +275,11 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
         # strftime appears to be the most reliable across drivers.
         statement.setString(idx + 1, value.time.strftime(STRFTIME_FMT))
       when Fixnum, Integer
-        statement.setInt(idx + 1, value)
+        if value > 2147483647 or value < -2147483648
+          statement.setLong(idx + 1, value)
+        else
+          statement.setInt(idx + 1, value)
+        end
       when Float
         statement.setFloat(idx + 1, value)
       when String
@@ -303,7 +307,7 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
     log_method = (retrying ? 'warn' : 'error')
 
     loop do
-      @logger.send(log_method, log_text, :exception => current_exception, :backtrace => current_exception.backtrace)
+      @logger.send(log_method, log_text, :exception => current_exception)
 
       if current_exception.respond_to? 'getNextException'
         current_exception = current_exception.getNextException()

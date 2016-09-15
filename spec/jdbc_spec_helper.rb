@@ -33,11 +33,11 @@ RSpec.shared_context 'when outputting messages' do
   end
 
   let(:jdbc_create_table) do
-    "CREATE table #{jdbc_test_table} (created_at datetime not null, message varchar(512) not null, message_sprintf varchar(512) not null, static_int int not null, static_bit bit not null)"
+    "CREATE table #{jdbc_test_table} (created_at datetime not null, message varchar(512) not null, message_sprintf varchar(512) not null, static_int int not null, static_bit bit not null, static_bigint bigint not null)"
   end
 
   let(:jdbc_statement) do
-    ["insert into #{jdbc_test_table} (created_at, message, message_sprintf, static_int, static_bit) values(?, ?, ?, ?, ?)", '@timestamp', 'message', 'sprintf-%{message}', 1, true]
+    ["insert into #{jdbc_test_table} (created_at, message, message_sprintf, static_int, static_bit, static_bigint) values(?, ?, ?, ?, ?, ?)", '@timestamp', 'message', 'sprintf-%{message}', 1, true, 4000881632477184]
   end
 
   let(:systemd_database_service) do
@@ -124,25 +124,24 @@ RSpec.shared_context 'when outputting messages' do
     # Check that everything is fine right now
     expect { p.multi_receive([event]) }.not_to raise_error
 
-    # Start a thread to stop and restart the service.
+    cmd = 'sudo /etc/init.d/%<service>s* %<action>s'
+
+    `which systemctl`
+    if $?.success?
+      start_stop_cmd = 'sudo systemctl %<action>s %<service>s'
+    end
+
+    cmd = cmd % { action: 'stop', service: systemd_database_service }
+    `#{cmd}`
+
+    # Start a thread to restart the service after the fact.
     t = Thread.new(systemd_database_service) { |systemd_database_service|
-      start_stop_cmd = 'sudo /etc/init.d/%<service>s* %<action>s'
-
-      `which systemctl`
-      if $?.success?
-        start_stop_cmd = 'sudo systemctl %<action>s %<service>s'
-      end
-
-      cmd = start_stop_cmd % { action: 'stop', service: systemd_database_service }
-      `#{cmd}`
-      sleep 10
+      sleep 20
 
       cmd = start_stop_cmd % { action: 'start', service: systemd_database_service }
       `#{cmd}`
     }
-
-    # Wait a few seconds to the service to stop
-    sleep 5
+    t.run
 
     expect(logger).to receive(:warn).at_least(:once).with(/JDBC - Exception. Retrying/, Hash)
     expect { p.multi_receive([event]) }.to_not raise_error
