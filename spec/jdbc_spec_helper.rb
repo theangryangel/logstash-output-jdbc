@@ -124,7 +124,7 @@ RSpec.shared_context 'when outputting messages' do
     # Check that everything is fine right now
     expect { p.multi_receive([event]) }.not_to raise_error
 
-    cmd = 'sudo /etc/init.d/%<service>s* %<action>s'
+    start_stop_cmd = 'sudo /etc/init.d/%<service>s* %<action>s'
 
     `which systemctl`
     if $?.success?
@@ -135,7 +135,7 @@ RSpec.shared_context 'when outputting messages' do
     `#{cmd}`
 
     # Start a thread to restart the service after the fact.
-    t = Thread.new(systemd_database_service) { |systemd_database_service|
+    t = Thread.new(systemd_database_service) { |start_stop_cmd, systemd_database_service|
       sleep 20
 
       cmd = start_stop_cmd % { action: 'start', service: systemd_database_service }
