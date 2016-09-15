@@ -7,7 +7,7 @@ require 'securerandom'
 RSpec.configure do |c|
 
   def start_service(name)
-    cmd = "sudo /etc/init.d/#{name}* stop"
+    cmd = "sudo /etc/init.d/#{name}* start"
 
     `which systemctl`
     if $?.success?
