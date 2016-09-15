@@ -131,7 +131,7 @@ RSpec.shared_context 'when outputting messages' do
       start_stop_cmd = 'sudo systemctl %<action>s %<service>s'
     end
 
-    cmd = cmd % { action: 'stop', service: systemd_database_service }
+    cmd = start_stop_cmd % { action: 'stop', service: systemd_database_service }
     `#{cmd}`
 
     # Start a thread to restart the service after the fact.
