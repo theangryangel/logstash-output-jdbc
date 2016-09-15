@@ -4,6 +4,32 @@ require 'stud/temporary'
 require 'java'
 require 'securerandom'
 
+RSpec.configure do |c|
+
+  def start_service(name)
+    cmd = "sudo /etc/init.d/#{name}* start"
+
+    `which systemctl`
+    if $?.success?
+      cmd = "sudo systemctl start #{name}"
+    end
+
+    `#{cmd}`
+  end
+
+  def stop_service(name)
+    cmd = "sudo /etc/init.d/#{name}* stop"
+
+    `which systemctl`
+    if $?.success?
+      cmd = "sudo systemctl stop #{name}"
+    end
+
+    `#{cmd}`
+  end
+
+end
+
 RSpec.shared_context 'rspec setup' do
   it 'ensure jar is available' do
     expect(ENV[jdbc_jar_env]).not_to be_nil, "#{jdbc_jar_env} not defined, required to run tests"
@@ -107,29 +133,21 @@ RSpec.shared_context 'when outputting messages' do
     # Check that everything is fine right now
     expect { p.multi_receive([event]) }.not_to raise_error
 
-    # Start a thread to stop and restart the service.
+    stop_service(systemd_database_service)
+
+    # Start a thread to restart the service after the fact.
     t = Thread.new(systemd_database_service) { |systemd_database_service|
-      start_stop_cmd = 'sudo /etc/init.d/%<service>s* %<action>s'
-
-      `which systemctl`
-      if $?.success?
-        start_stop_cmd = 'sudo systemctl %<action>s %<service>s'
-      end
-
-      cmd = start_stop_cmd % { action: 'stop', service: systemd_database_service }
-      `#{cmd}`
-      sleep 10
-
-      cmd = start_stop_cmd % { action: 'start', service: systemd_database_service }
-      `#{cmd}`
+      sleep 20
+    
+      start_service(systemd_database_service)
     }
 
-    # Wait a few seconds to the service to stop
-    sleep 5
-
+    t.run
+    
     expect(logger).to receive(:warn).at_least(:once).with(/JDBC - Exception. Retrying/, Hash)
     expect { p.multi_receive([event]) }.to_not raise_error
 
+    # Wait for the thread to finish
     t.join
   end
 end
