@@ -1,7 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file, from 0.2.0.
 
-## [0.3.1] = 2016-08-28
+## [0.3.2] - 2016-09-15
+  - Adds long/bigint support to address https://github.com/theangryangel/logstash-output-jdbc/issues/61
+
+## [0.3.1] - 2016-08-28
   - Adds connection_test configuration option, to prevent the connection test from occuring, allowing the error to be suppressed.
     Useful for cockroachdb deployments. https://github.com/theangryangel/logstash-output-jdbc/issues/53 
 

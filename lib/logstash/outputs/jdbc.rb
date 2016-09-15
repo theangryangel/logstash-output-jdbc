@@ -280,7 +280,13 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
         # strftime appears to be the most reliable across drivers.
         statement.setString(idx + 1, value.time.strftime(STRFTIME_FMT))
       when Fixnum, Integer
-        statement.setInt(idx + 1, value)
+        # bit_length doesn't exist in the current version of ruby/jruby logstash targets
+        # and this seems quicker than doing some Math.log2(value < 0 ? -value : value+1).ceil shit
+        if value > 2147483647 or value < -2147483648
+          statement.setLong(idx + 1, value)
+        else
+          statement.setInt(idx + 1, value)
+        end
       when Float
         statement.setFloat(idx + 1, value)
       when String

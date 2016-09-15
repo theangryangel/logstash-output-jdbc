@@ -31,11 +31,11 @@ RSpec.shared_context 'when outputting messages' do
   end
 
   let(:jdbc_create_table) do
-    "CREATE table #{jdbc_test_table} (created_at datetime not null, message varchar(512) not null, message_sprintf varchar(512) not null, static_int int not null, static_bit bit not null)"
+    "CREATE table #{jdbc_test_table} (created_at datetime not null, message varchar(512) not null, message_sprintf varchar(512) not null, static_int int not null, static_bit bit not null, static_bigint bigint not null)"
   end
 
   let(:jdbc_statement) do
-    ["insert into #{jdbc_test_table} (created_at, message, message_sprintf, static_int, static_bit) values(?, ?, ?, ?, ?)", '@timestamp', 'message', 'sprintf-%{message}', 1, true]
+    ["insert into #{jdbc_test_table} (created_at, message, message_sprintf, static_int, static_bit, static_bigint) values(?, ?, ?, ?, ?, ?)", '@timestamp', 'message', 'sprintf-%{message}', 1, true, 4000881632477184]
   end
 
   let(:systemd_database_service) do
