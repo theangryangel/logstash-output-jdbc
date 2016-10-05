@@ -12,7 +12,7 @@ require 'logstash-output-jdbc_jars'
 # includes correctly crafting the SQL statement, and matching the number of
 # parameters correctly.
 class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
-  declare_threadsafe! if self.respond_to?(:declare_threadsafe!)
+  concurrency :shared
 
   STRFTIME_FMT = '%Y-%m-%d %T.%L'.freeze
 
