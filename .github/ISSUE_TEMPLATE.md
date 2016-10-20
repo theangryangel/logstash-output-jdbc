@@ -1,5 +1,7 @@
 <!-- 
 
+Trouble installing the plugin under Logstash 2.4.0 with the message "duplicate gems"? See https://github.com/elastic/logstash/issues/5852
+
 Please remember:
  - I have not used every database engine in the world
  - I have not got access to every database engine in the world
