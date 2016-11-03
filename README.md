@@ -1,6 +1,6 @@
 # logstash-output-jdbc 
 
-[![Build Status](https://travis-ci.org/theangryangel/logstash-output-jdbc.svg?branch=master)](https://travis-ci.org/theangryangel/logstash-output-jdbc) - This branch is targetting v5 of Logstash and will have frequent breakages.
+[![Build Status](https://travis-ci.org/theangryangel/logstash-output-jdbc.svg?branch=master)](https://travis-ci.org/theangryangel/logstash-output-jdbc)
 
 This plugin is provided as an external plugin and is not part of the Logstash project.
 
@@ -21,7 +21,7 @@ See CHANGELOG.md
 Released versions are available via rubygems, and typically tagged.
 
 For development:
-  - See master branch for logstash v5 (currently **development only**)
+  - See master branch for logstash v5
   - See v2.x branch for logstash v2
   - See v1.5 branch for logstash v1.5 
   - See v1.4 branch for logstash 1.4
