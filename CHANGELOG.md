@@ -1,7 +1,13 @@
 # Change Log
 All notable changes to this project will be documented in this file, from 0.2.0.
 
-## [0.3.1] = 2016-08-28
+## [5.1.0] - 2016-12-17
+  - phoenix-thin fixes for issue #60
+
+## [5.0.0] - 2016-11-03
+  - logstash v5 support
+
+## [0.3.1] - 2016-08-28
   - Adds connection_test configuration option, to prevent the connection test from occuring, allowing the error to be suppressed.
     Useful for cockroachdb deployments. https://github.com/theangryangel/logstash-output-jdbc/issues/53 
 

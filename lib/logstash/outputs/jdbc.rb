@@ -86,6 +86,10 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   # Run a connection test on start.
   config :connection_test, validate: :boolean, default: true
 
+  # Connection test and init string, required for some JDBC endpoints
+  # notable phoenix-thin - see logstash-output-jdbc issue #60
+  config :connection_test_query, validate: :string, required: false
+
   # Maximum number of sequential failed attempts, before we stop retrying.
   # If set to < 1, then it will infinitely retry.
   # At the default values this is a little over 10 minutes
@@ -145,6 +149,11 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
     @pool.setConnectionTimeout(@connection_timeout)
 
     validate_connection_timeout = (@connection_timeout / 1000) / 2
+
+    if !@connection_test_query.nil? and @connection_test_query.length > 1
+      @pool.setConnectionTestQuery(@connection_test_query)
+      @pool.setConnectionInitSql(@connection_test_query)
+    end
 
     return unless @connection_test
 

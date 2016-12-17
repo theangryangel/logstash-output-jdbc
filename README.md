@@ -44,6 +44,7 @@ For development:
 | driver_jar_path | String | File path to jar file containing your JDBC driver. This is optional, and all JDBC jars may be placed in $LOGSTASH_HOME/vendor/jar/jdbc instead. | No | |
 | connection_string | String | JDBC connection URL | Yes | |
 | connection_test | Boolean | Run a JDBC connection test. Some drivers do not function correctly, and you may need to disable the connection test to supress an error. Cockroach with the postgres JDBC driver is such an example. | No | Yes |
+| connection_test_query | String | Connection test and init query string, required for some JDBC drivers that don't support isValid(). Typically you'd set to this "SELECT 1" | No |  |
 | username | String | JDBC username - this is optional as it may be included in the connection string, for many drivers | No | |
 | password | String | JDBC password - this is optional as it may be included in the connection string, for many drivers | No | |
 | statement | Array | An array of strings representing the SQL statement to run. Index 0 is the SQL statement that is prepared, all other array entries are passed in as parameters (in order). A parameter may either be a property of the event (i.e. "@timestamp", or "host") or a formatted string (i.e. "%{host} - %{message}" or "%{message}"). If a key is passed then it will be automatically converted as required for insertion into SQL. If it's a formatted string then it will be passed in verbatim. | Yes |  |
