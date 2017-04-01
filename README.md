@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/theangryangel/logstash-output-jdbc.svg?branch=v2.x)](https://travis-ci.org/theangryangel/logstash-output-jdbc)
 
+⚠️ The logstash v2 version of the plugin does not contain all fixes covered by the v5 version. If you find an issue is resolved under v5, but require the same issue fixed under v2, please raise an issue and I will do my best to find the time to backport the fix. At this time I recommend Logstash v5 where possible.
+
 This plugin is provided as an external plugin and is not part of the Logstash project.
 
 This plugin allows you to output to SQL databases, using JDBC adapters.
@@ -21,7 +23,7 @@ See CHANGELOG.md
 Released versions are available via rubygems, and typically tagged.
 
 For development:
-  - See master branch for logstash v5 (currently **development only**)
+  - See master branch for logstash v5 
   - See v2.x branch for logstash v2
   - See v1.5 branch for logstash v1.5 
   - See v1.4 branch for logstash 1.4
