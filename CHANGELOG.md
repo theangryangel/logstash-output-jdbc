@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file, from 0.2.0.
 
+## [5.2.1] - 2017-04-09
+  - Adds Array and Hash to_json support for non-sprintf syntax
+
 ## [5.2.0] - 2017-04-01
   - Upgrades HikariCP to latest
   - Fixes HikariCP logging integration issues

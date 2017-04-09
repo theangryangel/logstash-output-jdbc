@@ -5,6 +5,7 @@ require 'concurrent'
 require 'stud/interval'
 require 'java'
 require 'logstash-output-jdbc_jars'
+require 'json'
 
 # Write events to a SQL engine, using JDBC.
 #
@@ -293,6 +294,8 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
         statement.setFloat(idx + 1, value)
       when String
         statement.setString(idx + 1, value)
+      when Array, Hash
+        statement.setString(idx + 1, value.to_json)
       when true, false
         statement.setBoolean(idx + 1, value)
       else
