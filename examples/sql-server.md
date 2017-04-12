@@ -8,8 +8,24 @@ input
 }
 output {
 	jdbc {
+		driver_jar_path => '/opt/sqljdbc42.jar'
 		connection_string => "jdbc:sqlserver://server:1433;databaseName=databasename;user=username;password=password"
 		statement => [ "INSERT INTO log (host, timestamp, message) VALUES(?, ?, ?)", "host", "@timestamp", "message" ]
+	}
+	
+}
+```
+Another example, with mixed static strings and parameters
+```
+input
+{
+	stdin { }
+}
+output {
+jdbc {
+		driver_jar_path => '/opt/sqljdbc42.jar'
+		connection_string => "jdbc:sqlserver://server:1433;databaseName=databasename;user=username;password=password"
+		statement => [ "INSERT INTO log (host, timestamp, message, comment) VALUES(?, ?, ?, 'static string')", "host", "@timestamp", "message" ]
 	}
 }
 ```
