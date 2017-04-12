@@ -15,7 +15,8 @@ output {
 	
 }
 ```
-Another example, with mixed static strings and parameters
+
+Another example, with mixed static strings and parameters, with thanks to [@MassimoSporchia](https://github.com/MassimoSporchia)
 ```
 input
 {
