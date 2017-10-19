@@ -201,21 +201,23 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
     begin
       connection = @pool.getConnection
     rescue => e
-      log_jdbc_exception(e, true)
+      log_jdbc_exception(e, true, nil)
       # If a connection is not available, then the server has gone away
       # We're not counting that towards our retry count.
       return events, false
     end
 
     events.each do |event|
+      query = nil
       begin
         statement = connection.prepareStatement(
           (@unsafe_statement == true) ? event.sprintf(@statement[0]) : @statement[0]
         )
         statement = add_statement_event_params(statement, event) if @statement.length > 1
+        query = statement.toString
         statement.execute
       rescue => e
-        if retry_exception?(e)
+        if retry_exception?(e, query)
           events_to_retry.push(event)
         end
       ensure
@@ -306,16 +308,16 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
     statement
   end
 
-  def retry_exception?(exception)
+  def retry_exception?(exception, query)
     retrying = (exception.respond_to? 'getSQLState' and (RETRYABLE_SQLSTATE_CLASSES.include?(exception.getSQLState.to_s[0,2]) or @retry_sql_states.include?(exception.getSQLState)))
-    log_jdbc_exception(exception, retrying)
+    log_jdbc_exception(exception, retrying, query)
 
     retrying
   end
 
-  def log_jdbc_exception(exception, retrying)
+  def log_jdbc_exception(exception, retrying, query)
     current_exception = exception
-    log_text = 'JDBC - Exception. ' + (retrying ? 'Retrying' : 'Not retrying') + '.'
+    log_text = 'JDBC - Exception. ' + (retrying ? 'Retrying' : 'Not retrying') + '.' + ' with query: "' + query + '".'
     log_method = (retrying ? 'warn' : 'error')
 
     loop do
