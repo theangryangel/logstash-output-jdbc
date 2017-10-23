@@ -208,16 +208,14 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
     end
 
     events.each do |event|
-      query = nil
       begin
         statement = connection.prepareStatement(
           (@unsafe_statement == true) ? event.sprintf(@statement[0]) : @statement[0]
         )
         statement = add_statement_event_params(statement, event) if @statement.length > 1
-        query = statement.toString
         statement.execute
       rescue => e
-        if retry_exception?(e, query)
+        if retry_exception?(e, event.to_json())
           events_to_retry.push(event)
         end
       ensure
@@ -308,16 +306,21 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
     statement
   end
 
-  def retry_exception?(exception, query)
+  def retry_exception?(exception, event)
     retrying = (exception.respond_to? 'getSQLState' and (RETRYABLE_SQLSTATE_CLASSES.include?(exception.getSQLState.to_s[0,2]) or @retry_sql_states.include?(exception.getSQLState)))
-    log_jdbc_exception(exception, retrying, query)
+    log_jdbc_exception(exception, retrying, event)
 
     retrying
   end
 
-  def log_jdbc_exception(exception, retrying, query)
+  def log_jdbc_exception(exception, retrying, event)
     current_exception = exception
-    log_text = 'JDBC - Exception. ' + (retrying ? 'Retrying' : 'Not retrying') + '.' + ' with query: "' + query + '".'
+    log_text = 'JDBC - Exception. ' + (retrying ? 'Retrying' : 'Not retrying') + '.'
+    
+    if(event != nil)
+        log_text += ' event: "' + event + '".'
+    end
+    
     log_method = (retrying ? 'warn' : 'error')
 
     loop do
