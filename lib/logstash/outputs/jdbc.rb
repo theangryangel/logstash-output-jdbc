@@ -64,7 +64,7 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   config :unsafe_statement, validate: :boolean, default: false
 
   # Number of connections in the pool to maintain
-  config :max_pool_size, validate: :number, default: 24
+  config :max_pool_size, validate: :number, default: 5
 
   # Connection timeout
   config :connection_timeout, validate: :number, default: 10000
