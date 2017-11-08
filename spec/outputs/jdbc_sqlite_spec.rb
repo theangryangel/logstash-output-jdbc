@@ -8,7 +8,6 @@ describe 'logstash-output-jdbc: sqlite', if: ENV['JDBC_SQLITE_JAR'] do
   end
 
   include_context 'rspec setup'
-  include_context 'when initializing'
   include_context 'when outputting messages'
 
   let(:jdbc_jar_env) do

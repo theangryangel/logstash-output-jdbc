@@ -269,7 +269,7 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
 
   def add_statement_event_params(statement, event)
     @statement[1..-1].each_with_index do |i, idx|
-      if @enable_event_as_json_keyword and i.is_a? String and i == @event_as_json_keyword
+      if @enable_event_as_json_keyword == true and i.is_a? String and i == @event_as_json_keyword
         value = event.to_json
       elsif i.is_a? String
         value = event.get(i)
@@ -300,7 +300,8 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
           statement.setInt(idx + 1, value)
         end
       when BigDecimal
-        statement.setBigDecimal(idx + 1, value)
+        # TODO: There has to be a better way than this. Find it.
+        statement.setBigDecimal(idx + 1, java.math.BigDecimal.new(value.to_s))
       when Float
         statement.setFloat(idx + 1, value)
       when String
@@ -326,16 +327,14 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
 
   def log_jdbc_exception(exception, retrying, event)
     current_exception = exception
-    log_text = 'JDBC - Exception. ' + (retrying ? 'Retrying' : 'Not retrying') + '.'
-    
-    if(event != nil)
-        log_text += ' event: "' + event + '".'
-    end
+    log_text = 'JDBC - Exception. ' + (retrying ? 'Retrying' : 'Not retrying') 
     
     log_method = (retrying ? 'warn' : 'error')
 
     loop do
-      @logger.send(log_method, log_text, :exception => current_exception)
+      # TODO reformat event output so that it only shows the fields necessary.
+
+      @logger.send(log_method, log_text, :exception => current_exception, :statement => @statement[0], :event => event)
 
       if current_exception.respond_to? 'getNextException'
         current_exception = current_exception.getNextException()

@@ -1,12 +1,19 @@
 require_relative '../jdbc_spec_helper'
 
-describe 'logstash-output-jdbc: derby', if: ENV['JDBC_DERBY_JAR'] do
+describe 'logstash-output-jdbc: postgres', if: ENV['JDBC_POSTGRES_JAR'] do
   include_context 'rspec setup'
   include_context 'when outputting messages'
 
   let(:jdbc_jar_env) do
-    'JDBC_DERBY_JAR'
+    'JDBC_POSTGRES_JAR'
   end
+
+  # TODO: Postgres doesnt kill connections fast enough for the test to pass
+  # Investigate options.
+
+  #let(:systemd_database_service) do
+  #  'postgresql'
+  #end
 
   let(:jdbc_statement_fields) do
     [
@@ -17,14 +24,15 @@ describe 'logstash-output-jdbc: derby', if: ENV['JDBC_DERBY_JAR'] do
       {db_field: "static_bigint",    db_type: "bigint",        db_value: '?',                     event_field: 'bigint'},
       {db_field: "static_float",     db_type: "float",         db_value: '?',                     event_field: 'float'},
       {db_field: "static_bool",      db_type: "boolean",       db_value: '?',                     event_field: 'bool'},
-      {db_field: "static_bigdec",    db_type: "decimal",       db_value: '?',                     event_field: 'bigdec'}      
+      {db_field: "static_bigdec",    db_type: "decimal",       db_value: '?',                     event_field: 'bigdec'}
+
     ]
   end
 
   let(:jdbc_settings) do
     {
-      'driver_class' => 'org.apache.derby.jdbc.EmbeddedDriver',
-      'connection_string' => 'jdbc:derby:memory:testdb;create=true',
+      'driver_class' => 'org.postgresql.Driver',
+      'connection_string' => 'jdbc:postgresql://localhost/logstash?user=logstash&password=logstash',
       'driver_jar_path' => ENV[jdbc_jar_env],
       'statement' => jdbc_statement,
       'max_flush_exceptions' => 1

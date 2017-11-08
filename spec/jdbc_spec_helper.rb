@@ -4,6 +4,8 @@ require 'stud/temporary'
 require 'java'
 require 'securerandom'
 
+RSpec::Support::ObjectFormatter.default_instance.max_formatted_output_length = 80000
+
 RSpec.configure do |c|
 
   def start_service(name)
@@ -58,28 +60,57 @@ RSpec.shared_context 'when outputting messages' do
     "DROP TABLE #{jdbc_test_table}"
   end
 
+  let(:jdbc_statement_fields) do
+    [
+      {db_field: "created_at",       db_type: "datetime",      db_value: '?',  event_field: '@timestamp'},
+      {db_field: "message",          db_type: "varchar(512)",  db_value: '?',  event_field: 'message'},
+      {db_field: "message_sprintf",  db_type: "varchar(512)",  db_value: '?',  event_field: 'sprintf-%{message}'},
+      {db_field: "static_int",       db_type: "int",           db_value: '?',  event_field: 'int'},
+      {db_field: "static_bigint",    db_type: "bigint",        db_value: '?',  event_field: 'bigint'},
+      {db_field: "static_float",     db_type: "float",         db_value: '?',  event_field: 'float'},
+      {db_field: "static_bool",      db_type: "boolean",       db_value: '?',  event_field: 'bool'},
+      {db_field: "static_bigdec",    db_type: "bigdecimal",    db_value: '?',  event_field: 'bigdec'}
+    ]
+  end
+
   let(:jdbc_create_table) do
-    "CREATE table #{jdbc_test_table} (created_at datetime not null, message varchar(512) not null, message_sprintf varchar(512) not null, static_int int not null, static_bit bit not null, static_bigint bigint not null, static_float float not null)"
+    fields = jdbc_statement_fields.collect { |entry| "#{entry[:db_field]} #{entry[:db_type]} not null" }.join(", ")
+
+    "CREATE table #{jdbc_test_table} (#{fields})"
+  end
+
+  let(:jdbc_drop_table) do
+    "DROP table #{jdbc_test_table}"
   end
 
   let(:jdbc_statement) do
-    ["insert into #{jdbc_test_table} (created_at, message, message_sprintf, static_int, static_bit, static_bigint, static_float) values(?, ?, ?, ?, ?, ?, ?)", '@timestamp', 'message', 'sprintf-%{message}', 1, true, 4000881632477184, 12.1]
+    fields = jdbc_statement_fields.collect { |entry| "#{entry[:db_field]}" }.join(", ")
+    values = jdbc_statement_fields.collect { |entry| "#{entry[:db_value]}" }.join(", ")
+    statement = jdbc_statement_fields.collect { |entry| entry[:event_field] }
+
+    statement.insert(0, "insert into #{jdbc_test_table} (#{fields}) values(#{values})")
   end
 
   let(:systemd_database_service) do
     nil
   end
 
-  let(:event_fields) do
-    { message: "test-message #{SecureRandom.uuid}" }
+  let(:event) do
+    # TODO: Auto generate fields from jdbc_statement_fields
+    LogStash::Event.new({ 
+      message: "test-message #{SecureRandom.uuid}",
+      float: 12.1,
+      bigint: 4000881632477184,
+      bool: true,
+      int: 1,
+      bigdec: BigDecimal.new("123.123")
+    })
   end
-
-  let(:event) { LogStash::Event.new(event_fields) }
 
   let(:plugin) do
     # Setup logger
     allow(LogStash::Outputs::Jdbc).to receive(:logger).and_return(logger)
-    
+
     # XXX: Suppress reflection logging. There has to be a better way around this.
     allow(logger).to receive(:debug).with(/config LogStash::/)
 
@@ -93,8 +124,12 @@ RSpec.shared_context 'when outputting messages' do
     output = LogStash::Plugin.lookup('output', 'jdbc').new(jdbc_settings)
     output.register
 
+    output
+  end
+
+  before :each do
     # Setup table
-    c = output.instance_variable_get(:@pool).getConnection
+    c = plugin.instance_variable_get(:@pool).getConnection
 
     # Derby doesn't support IF EXISTS. 
     # Seems like the quickest solution. Bleurgh.
@@ -111,8 +146,16 @@ RSpec.shared_context 'when outputting messages' do
       stmt.close
       c.close
     end
+  end
 
-    output
+  # Delete table after each
+  after :each do
+    c = plugin.instance_variable_get(:@pool).getConnection
+
+    stmt = c.createStatement
+    stmt.executeUpdate(jdbc_drop_table)
+    stmt.close
+    c.close
   end
 
   it 'should save a event' do
@@ -120,6 +163,9 @@ RSpec.shared_context 'when outputting messages' do
 
     # Verify the number of items in the output table
     c = plugin.instance_variable_get(:@pool).getConnection
+
+    # TODO replace this simple count with a check of the actual contents
+
     stmt = c.prepareStatement("select count(*) as total from #{jdbc_test_table} where message = ?")
     stmt.setString(1, event.get('message'))
     rs = stmt.executeQuery
@@ -143,7 +189,7 @@ RSpec.shared_context 'when outputting messages' do
   end
 
   it 'it should retry after a connection loss, and log a warning' do
-    skip "does not run as a service" if systemd_database_service.nil?
+    skip "does not run as a service, or known issue with test" if systemd_database_service.nil?
 
     p = plugin
 
@@ -155,12 +201,12 @@ RSpec.shared_context 'when outputting messages' do
     # Start a thread to restart the service after the fact.
     t = Thread.new(systemd_database_service) { |systemd_database_service|
       sleep 20
-    
+
       start_service(systemd_database_service)
     }
 
     t.run
-    
+
     expect(logger).to receive(:warn).at_least(:once).with(/JDBC - Exception. Retrying/, Hash)
     expect { p.multi_receive([event]) }.to_not raise_error
 
