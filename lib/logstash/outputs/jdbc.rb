@@ -262,10 +262,14 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
 
   def add_statement_event_params(statement, event)
     @statement[1..-1].each_with_index do |i, idx|
-      if i.is_a? String 
-        value = event.get(i)
-        if value.nil? and i =~ /%\{/
-          value = event.sprintf(i)
+      if i.is_a? String
+        if i == '%{}'
+          value = event.to_json
+        else
+          value = event.get(i)
+          if value.nil? and i =~ /%\{/
+            value = event.sprintf(i)
+          end
         end
       else
         value = i
