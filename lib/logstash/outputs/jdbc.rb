@@ -6,6 +6,7 @@ require 'stud/interval'
 require 'java'
 require 'logstash-output-jdbc_jars'
 require 'json'
+require 'bigdecimal'
 
 # Write events to a SQL engine, using JDBC.
 #
@@ -99,6 +100,12 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   config :max_repeat_exceptions, obsolete: 'This has been replaced by max_flush_exceptions - which behaves slightly differently. Please check the documentation.'
   config :max_repeat_exceptions_time, obsolete: 'This is no longer required'
   config :idle_flush_time, obsolete: 'No longer necessary under Logstash v5'
+  
+  # Allows the whole event to be converted to JSON
+  config :enable_event_as_json_keyword, validate: :boolean, default: false
+  
+  # The magic key used to convert the whole event to JSON. If you need this, and you have the default in your events, you can use this to change your magic keyword.
+  config :event_as_json_keyword, validate: :string, default: '@event'
 
   def register
     @logger.info('JDBC - Starting up')
@@ -262,7 +269,9 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
 
   def add_statement_event_params(statement, event)
     @statement[1..-1].each_with_index do |i, idx|
-      if i.is_a? String 
+      if @enable_event_as_json_keyword and i.is_a? String and i == @event_as_json_keyword
+        value = event.to_json
+      elsif i.is_a? String
         value = event.get(i)
         if value.nil? and i =~ /%\{/
           value = event.sprintf(i)
@@ -290,6 +299,8 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
         else
           statement.setInt(idx + 1, value)
         end
+      when BigDecimal
+        statement.setBigDecimal(idx + 1, value)
       when Float
         statement.setFloat(idx + 1, value)
       when String
