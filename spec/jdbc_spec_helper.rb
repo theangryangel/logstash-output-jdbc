@@ -69,7 +69,7 @@ RSpec.shared_context 'when outputting messages' do
       {db_field: "static_bigint",    db_type: "bigint",        db_value: '?',  event_field: 'bigint'},
       {db_field: "static_float",     db_type: "float",         db_value: '?',  event_field: 'float'},
       {db_field: "static_bool",      db_type: "boolean",       db_value: '?',  event_field: 'bool'},
-      {db_field: "static_bigdec",    db_type: "bigdecimal",    db_value: '?',  event_field: 'bigdec'}
+      {db_field: "static_bigdec",    db_type: "decimal",       db_value: '?',  event_field: 'bigdec'}
     ]
   end
 
