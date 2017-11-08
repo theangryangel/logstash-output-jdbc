@@ -1,21 +1,19 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+JRUBY_VERSION = "jruby-1.7"
+
 Vagrant.configure(2) do |config|
 
   config.vm.define "debian" do |deb|
-    deb.vm.box = 'debian/jessie64'
+    deb.vm.box = 'debian/stretch64'
     deb.vm.synced_folder '.', '/vagrant', type: :virtualbox
 
     deb.vm.provision 'shell', inline: <<-EOP
-      echo "deb http://ftp.debian.org/debian jessie-backports main" | tee --append /etc/apt/sources.list > /dev/null
-      sed -i 's/main/main contrib non-free/g' /etc/apt/sources.list
       apt-get update
-      apt-get remove openjdk-7-jre-headless -y -q
-      apt-get install -t jessie-backports openjdk-8-jre ca-certificates-java
-      apt-get install git curl -y -q
-      gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
-      curl -sSL https://get.rvm.io | bash -s stable --ruby=jruby-1.7
+      apt-get install openjdk-8-jre ca-certificates-java git curl -y -q
+      curl -sSL https://rvm.io/mpapis.asc | sudo gpg --import -
+      curl -sSL https://get.rvm.io | bash -s stable --ruby=#{JRUBY_VERSION}
       usermod -a -G rvm vagrant
     EOP
   end
@@ -28,8 +26,8 @@ Vagrant.configure(2) do |config|
     centos.vm.provision 'shell', inline: <<-EOP
       yum update
       yum install java-1.7.0-openjdk
-      gpg2 --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
-      curl -sSL https://get.rvm.io | bash -s stable --ruby=jruby-1.7
+      curl -sSL https://rvm.io/mpapis.asc | sudo gpg --import -
+      curl -sSL https://get.rvm.io | bash -s stable --ruby=#{JRUBY_VERSION}
       usermod -a -G rvm vagrant
     EOP
   end
