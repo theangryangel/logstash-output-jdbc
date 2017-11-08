@@ -10,7 +10,7 @@ describe 'logstash-output-jdbc: derby', if: ENV['JDBC_DERBY_JAR'] do
   end
 
   let(:jdbc_create_table) do
-    "CREATE table #{jdbc_test_table} (created_at timestamp not null, message varchar(512) not null, message_sprintf varchar(512) not null, static_int int not null, static_bit boolean not null, static_bigint bigint not null)"
+    "CREATE table #{jdbc_test_table} (created_at timestamp not null, message varchar(512) not null, message_sprintf varchar(512) not null, static_int int not null, static_bit boolean not null, static_bigint bigint not null, static_float not null)"
   end
  
   let(:jdbc_settings) do
