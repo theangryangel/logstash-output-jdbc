@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file, from 0.2.0.
 
+## [5.3.0] - 2017-11-08
+  - Adds configuration options `enable_event_as_json_keyword` and `event_as_json_keyword`
+  - Adds BigDecimal support
+  - Adds additional logging for debugging purposes (with thanks to @mlkmhd's work)
+
 ## [5.2.1] - 2017-04-09
   - Adds Array and Hash to_json support for non-sprintf syntax
 
