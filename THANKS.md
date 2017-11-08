@@ -15,3 +15,4 @@ produced by GitHub: https://github.com/theangryangel/logstash-output-jdbc/graphs
  * [onesuper](https://github.com/onesuper)
  * [phr0gz](https://github.com/phr0gz)
  * [jMonsinjon](https://github.com/jMonsinjon)
+ * [mlkmhd](https://github.com/mlkmhd)
