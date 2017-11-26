@@ -34,5 +34,5 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency "logstash-devutils", "~> 1.3", ">= 1.3.1"
 
-  s.add_development_dependency 'rubocop', '~> 0.51.0'
+  s.add_development_dependency 'rubocop', '0.41.2'
 end
