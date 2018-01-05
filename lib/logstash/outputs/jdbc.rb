@@ -300,8 +300,7 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
           statement.setInt(idx + 1, value)
         end
       when BigDecimal
-        # TODO: There has to be a better way than this. Find it.
-        statement.setBigDecimal(idx + 1, java.math.BigDecimal.new(value.to_s))
+        statement.setBigDecimal(idx + 1, value.to_java)
       when Float
         statement.setFloat(idx + 1, value)
       when String
