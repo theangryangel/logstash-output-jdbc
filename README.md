@@ -21,7 +21,7 @@ See CHANGELOG.md
 Released versions are available via rubygems, and typically tagged.
 
 For development:
-  - See master branch for logstash v5
+  - See master branch for logstash v5 & v6
   - See v2.x branch for logstash v2
   - See v1.5 branch for logstash v1.5 
   - See v1.4 branch for logstash 1.4
