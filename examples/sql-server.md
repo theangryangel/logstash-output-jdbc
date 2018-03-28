@@ -30,3 +30,5 @@ jdbc {
 	}
 }
 ```
+
+Note: Windows users need to use windows paths (e.g. `C:\lib\mssql-jdbc-6.4.0.jre8.jar`). Paths with forward slashes will not work.
