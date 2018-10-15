@@ -19,19 +19,19 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   STRFTIME_FMT = '%Y-%m-%d %T.%L'.freeze
 
   RETRYABLE_SQLSTATE_CLASSES = [
-    # Classes of retryable SQLSTATE codes
-    # Not all in the class will be retryable. However, this is the best that 
-    # we've got right now.
-    # If a custom state code is required, set it in retry_sql_states.
-    '08', # Connection Exception
-    '24', # Invalid Cursor State (Maybe retry-able in some circumstances)
-    '25', # Invalid Transaction State 
-    '40', # Transaction Rollback 
-    '53', # Insufficient Resources
-    '54', # Program Limit Exceeded (MAYBE)
-    '55', # Object Not In Prerequisite State
-    '57', # Operator Intervention
-    '58', # System Error
+      # Classes of retryable SQLSTATE codes
+      # Not all in the class will be retryable. However, this is the best that
+      # we've got right now.
+      # If a custom state code is required, set it in retry_sql_states.
+      '08', # Connection Exception
+      '24', # Invalid Cursor State (Maybe retry-able in some circumstances)
+      '25', # Invalid Transaction State
+      '40', # Transaction Rollback
+      '53', # Insufficient Resources
+      '54', # Program Limit Exceeded (MAYBE)
+      '55', # Object Not In Prerequisite State
+      '57', # Operator Intervention
+      '58', # System Error
   ].freeze
 
   config_name 'jdbc'
@@ -81,7 +81,7 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   # Maximum time between retries, in seconds
   config :retry_max_interval, validate: :number, default: 128
 
-  # Any additional custom, retryable SQL state codes. 
+  # Any additional custom, retryable SQL state codes.
   # Suitable for configuring retryable custom JDBC SQL state codes.
   config :retry_sql_states, validate: :array, default: []
 
@@ -100,10 +100,10 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   config :max_repeat_exceptions, obsolete: 'This has been replaced by max_flush_exceptions - which behaves slightly differently. Please check the documentation.'
   config :max_repeat_exceptions_time, obsolete: 'This is no longer required'
   config :idle_flush_time, obsolete: 'No longer necessary under Logstash v5'
-  
+
   # Allows the whole event to be converted to JSON
   config :enable_event_as_json_keyword, validate: :boolean, default: false
-  
+
   # The magic key used to convert the whole event to JSON. If you need this, and you have the default in your events, you can use this to change your magic keyword.
   config :event_as_json_keyword, validate: :string, default: '@event'
 
@@ -217,7 +217,7 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
     events.each do |event|
       begin
         statement = connection.prepareStatement(
-          (@unsafe_statement == true) ? event.sprintf(@statement[0]) : @statement[0]
+            (@unsafe_statement == true) ? event.sprintf(@statement[0]) : @statement[0]
         )
         statement = add_statement_event_params(statement, event) if @statement.length > 1
         statement.execute
@@ -326,8 +326,8 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
 
   def log_jdbc_exception(exception, retrying, event)
     current_exception = exception
-    log_text = 'JDBC - Exception. ' + (retrying ? 'Retrying' : 'Not retrying') 
-    
+    log_text = 'JDBC - Exception. ' + (retrying ? 'Retrying' : 'Not retrying')
+
     log_method = (retrying ? 'warn' : 'error')
 
     loop do
