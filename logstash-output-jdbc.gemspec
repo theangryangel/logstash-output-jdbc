@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.authors = ["the_angry_angel"]
   s.email = "karl+github@theangryangel.co.uk"
   s.homepage = "https://github.com/theangryangel/logstash-output-jdbc"
-  s.require_paths = ["lib", "vendor"]
+  s.require_paths = ["lib"]
 
   # Files
   s.files = Dir['lib/**/*','spec/**/*','vendor/**/*','*.gemspec','*.md','CONTRIBUTORS','Gemfile','LICENSE','NOTICE.TXT']
