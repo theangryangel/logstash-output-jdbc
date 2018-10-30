@@ -217,7 +217,7 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
     events.each do |event|
       begin
         statement = connection.prepareStatement(
-          (@unsafe_statement == true) ? event.sprintf(@statement[0]) : @statement[0]
+            (@unsafe_statement == true) ? event.sprintf(@statement[0]) : @statement[0]
         )
         statement = add_statement_event_params(statement, event) if @statement.length > 1
         statement.execute
