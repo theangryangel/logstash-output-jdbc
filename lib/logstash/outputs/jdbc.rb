@@ -124,6 +124,8 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
       @logger.error("JDBC - Statement has no parameters. No events will be inserted into SQL as you're not passing any event data. Likely configuration error.")
     end
 
+    @dlq_writer = dlq_enabled? ? execution_context.dlq_writer : nil
+
     setup_and_test_pool!
   end
 
@@ -224,6 +226,8 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
       rescue => e
         if retry_exception?(e, event.to_json())
           events_to_retry.push(event)
+        elsif @dlq_writer
+          @dlq_writer.write(event, {:exception => e, :attempts => 1})
         end
       ensure
         statement.close unless statement.nil?
@@ -256,6 +260,12 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
 
         if attempts > @max_flush_exceptions
           @logger.error("JDBC - max_flush_exceptions has been reached. #{submit_actions.length} events have been unable to be sent to SQL and are being dropped. See previously logged exceptions for details.")
+
+          if @dlq_writer
+            submit_actions.each do |action|
+              @dlq_writer.write(event, {:attempts => attempts})
+            end
+          end
           break
         end
       end
@@ -348,5 +358,12 @@ class LogStash::Outputs::Jdbc < LogStash::Outputs::Base
   def next_sleep_interval(current_interval)
     doubled = current_interval * 2
     doubled > @retry_max_interval ? @retry_max_interval : doubled
+  end
+
+  def dlq_enabled?
+    # Seems to be the best way to find out if DLQ is enabled.
+    # See: https://github.com/elastic/logstash/issues/8064
+    respond_to?(:execution_context) && execution_context.respond_to?(:dlq_writer) &&
+      !execution_context.dlq_writer.inner_writer.is_a?(::LogStash::Util::DummyDeadLetterQueueWriter)
   end
 end # class LogStash::Outputs::jdbc
