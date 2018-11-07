@@ -1,6 +1,6 @@
 # logstash-output-jdbc 
 
-[![Build Status](https://travis-ci.org/theangryangel/logstash-output-jdbc.svg?branch=master)](https://travis-ci.org/theangryangel/logstash-output-jdbc)
+[![Build Status](https://travis-ci.org/theangryangel/logstash-output-jdbc.svg?branch=master)](https://travis-ci.org/theangryangel/logstash-output-jdbc) [![Flattr this git repo](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=the_angry_angel&url=https://github.com/the_angry_angel/logstash-output-jdbc&title=logstash-output-jdbc&language=&tags=github&category=software)
 
 This plugin is provided as an external plugin and is not part of the Logstash project.
 
