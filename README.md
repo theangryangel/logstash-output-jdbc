@@ -40,6 +40,10 @@ For development:
     - Add JDBC jar files to vendor/jar/jdbc in your logstash installation
   - And then configure (examples can be found in the examples directory)
 
+## Docker Container
+- Ready to use container with plugin installed could be pulled from docker hub.
+    `docker pull delatitude/logstash-postgresql-output:latest`
+
 ## Configuration options
 
 | Option                       | Type             | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Required? | Default |
