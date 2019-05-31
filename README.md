@@ -17,7 +17,9 @@ particular location. Please ensure you read the 4 installation lines below.
 ## Support & release schedule
 I no longer have time at work to maintain this plugin in step with Logstash's releases, and I am not completely immersed in the Logstash ecosystem. If something is broken for you I will do my best to help, but I cannot guarantee timeframes.
 
-Pull requests are always welcome. 
+Pull requests are always welcome.
+
+If you want to act as an additional maintainer, please reach out to discuss.
 
 ## Changelog
 See CHANGELOG.md
